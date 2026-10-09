@@ -27,7 +27,7 @@ const PORT = Number(process.env.PORT ?? process.env.PATCHLOOP_PORT ?? 4173);
 const store = new Store(path.join(STATE_DIR, 'state.json'));
 const engine = new Engine(store);
 
-const mimeTypes = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
+const mimeTypes = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 function send(res, status, value, type = 'application/json; charset=utf-8') {
   const body = typeof value === 'string' ? value : JSON.stringify(value);

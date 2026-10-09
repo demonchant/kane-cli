@@ -40,7 +40,7 @@ The local GitHub version remains available and runnable with the setup above. A 
 1. Google login and authorization on every state-changing and run/evidence endpoint.
 2. Per-user repositories, run records, worktrees, quotas, and cleanup, with isolation enforced server-side.
 3. A worker boundary for untrusted repo code and browser sessions. The public web process must not execute arbitrary user repository code in its own shared instance.
-4. An operator-funded Kane account and OpenAI Platform project, with server-side secrets, spend caps, quotas, and abuse limits. End users should not connect provider accounts.
+4. Per-user connections for TestMu/Kane and ChatGPT, stored and used securely per account. The operator should not receive the user's provider passwords or pay their usage.
 5. Durable database/object storage, retention controls, audit events, and operational monitoring.
 6. Security review and tests for cross-user access, prompt/repository attacks, resource exhaustion, and worker cleanup.
 
@@ -48,7 +48,7 @@ Until those items exist, keep the full process API on loopback. A Render link ca
 
 ### Hosted link and authentication setup
 
-This is the setup path for a **login-only hosted preview**. It creates a Render URL and private Google-owned run-history sessions. The current blueprint deliberately disables task creation, Kane, and Codex; it is not yet the requested full live service. Do not announce this preview as a live agent product.
+This is the setup path for a **login-only hosted preview**. It creates a Render URL and private Google-owned run-history sessions. The current blueprint deliberately disables task creation, Kane, and Codex; it is not yet the requested full live service. Do not announce this preview as a live agent product. Render's current blueprint selects a paid Starter web service and persistent disk. Render lists the smallest paid web compute at $6/month, plus persistent disk at $0.25/GB/month; check the dashboard for current pricing and billing before creating it. The Render free web service sleeps after 15 idle minutes and has an ephemeral filesystem, so it cannot retain this app's local JSON history or run worktrees across restarts.
 
 #### 1. Publish the repository
 
@@ -83,13 +83,15 @@ The Blueprint sets the auth mode, execution mode, persistent data path, and gene
 
 Check `https://<your-service>.onrender.com/api/health`, open the site in a private browser, and complete Google sign-in. Sign in with two different Google accounts and check that each account sees an empty, separate history. Run creation remains disabled and returns HTTP 503 by design. Sign-out should clear that browser's session. If sign-in fails, check that `PATCHLOOP_PUBLIC_URL`, the Google origin, and callback URI match exactly and that the user is allowed by the consent-screen audience.
 
-#### 4. Operator-owned provider accounts and live runs
+#### 4. What each user/judge needs to bring
 
-The product requirement is: users sign in to PatchLoop with Google and then use it; PatchLoop owns the Kane and Codex provider accounts and pays for usage. Do not ask each user for provider credentials. The owner must provision and fund the service accounts once, outside this repository.
+The product requirement is: Google signs users into PatchLoop; each person then connects their own Kane and ChatGPT access. PatchLoop should not pay for their provider usage or ask for provider passwords.
 
-For Kane, the operator needs a TestMu AI account with an access key and usage capacity. Kane CLI supports headless account authentication with username and access key, including per-run flags. The app does not yet load these operator credentials or pass them to a hosted worker; do not place them in browser code, GitHub, or a general-purpose shared environment. See [TestMu's Kane CLI authentication guide](https://www.testmuai.com/docs/kane-cli-authentication).
+**Kane:** each user needs a TestMu AI account and a Kane username/access key. The latest TestMu announcement for this online hackathon says registered participants receive $100 in Kane CLI credits; users should confirm their own balance and expiry in their account. The older August event's 10,000-credit allowance is a different edition. Kane CLI documents non-interactive auth with username/access key and recommends keeping them private. See [TestMu registration](https://www.testmuai.com/register/) and [Kane authentication](https://www.testmuai.com/docs/kane-cli-authentication).
 
-For Codex, the operator needs an OpenAI Platform project with billing and a server-side API key for programmatic Codex CLI usage. Codex supports API-key authentication, which is billed at API rates; this is different from ChatGPT plan sign-in. **Do not add a "Sign in with ChatGPT" provider step for end users.** OpenAI's website SIWC flow is a limited trial for users connecting their own ChatGPT accounts/plans, which is the opposite account model. See [Codex authentication](https://developers.openai.com/codex/auth) and [Sign in with ChatGPT for websites](https://developers.openai.com/siwc/website).
+**Codex:** the intended hosted path is Sign in with ChatGPT with optional ChatGPT plan usage, so each user authorizes their own account and consents to eligible usage. This is not a shared service account and does not give the app access to the user's ChatGPT conversations. OpenAI documents this flow for open-source/local tools and self-hosted VMs; its docs say developers interested in a remotely hosted app must complete OpenAI's interest form. PatchLoop has not received or completed that approval, so do not promise ChatGPT connection on the Render link yet. Do not ask users to paste their ChatGPT password or session token. See [OpenAI's ChatGPT plan usage overview](https://developers.openai.com/siwc/token-sharing-open-source) and [self-hosted VM guide](https://developers.openai.com/siwc/token-sharing-open-source/self-hosted-vms).
+
+The in-app [setup guide](../public/setup.html) explains these prerequisites and shows which parts are live. **The connection forms and hosted execution are not active in this release.** At present, users can use the working local path with `kane-cli login --oauth` and `codex login` on their own computer. Do not ask users to paste Kane keys into task text or connect them until the encrypted provider settings UI is available. A personal OpenAI API key is a separate fallback that is billed through the user's OpenAI Platform account; it is not covered by ChatGPT subscription access and is not currently wired into PatchLoop.
 
 Before live runs are enabled, implement and review:
 
@@ -98,7 +100,7 @@ Before live runs are enabled, implement and review:
 3. **Tenant isolation:** enforce Google user ownership for every record, worktree, artifact, and downloadable diff. Keep each user's state and artifacts separate.
 4. **Production operations:** protect and rotate provider secrets, redact logs, add abuse monitoring, set retention/deletion, and recover durable state after restarts. Verify with multiple Google accounts and hostile repository tests.
 
-Only after those features and checks are complete should the hosted service enable execution. The current server intentionally fails startup if Google hosted mode is configured with execution enabled; it has one shared engine and does not yet implement the operator-owned provider credentials or isolated workers. Keep that guard. A login-only Render preview can exercise Google auth, but it cannot run a task, and no mock verdict path is enabled.
+Only after those features and checks are complete should the hosted service enable execution. The current server intentionally fails startup if Google hosted mode is configured with execution enabled; it has one shared engine and does not yet implement per-user provider connections or isolated workers. Keep that guard. A login-only Render preview can exercise Google auth, but it cannot run a task, and no mock verdict path is enabled.
 
 ## Required local prerequisites
 

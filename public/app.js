@@ -160,11 +160,13 @@ async function initialize() {
   try {
     activeSession = await api('/api/session');
     if (activeSession.mode === 'google' && !activeSession.authenticated) {
+      document.body.dataset.screen = 'signin';
       $('#sign-in-screen').hidden = false;
       $('#app-main').hidden = true;
       $('.privacy').innerHTML = '<i></i> Sign in required';
       return;
     }
+    document.body.dataset.screen = 'workbench';
     $('#sign-in-screen').hidden = true;
     $('#app-main').hidden = false;
     if (activeSession.mode === 'google') {
@@ -184,6 +186,7 @@ async function initialize() {
     if (activeSession.mode === 'google' && !activeSession.executionEnabled) setInterval(() => { void loadRuns(); }, 1800);
     if (activeSession.mode === 'local') setInterval(() => { void loadRuns(); }, 1800);
   } catch (error) {
+    document.body.dataset.screen = 'signin';
     $('#sign-in-screen').hidden = false;
     $('#app-main').hidden = true;
     $('#sign-in-error').hidden = false;

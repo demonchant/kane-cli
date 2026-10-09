@@ -17,6 +17,35 @@ test('loads the workbench and reports real local tool readiness', async ({ page 
   expect(pageErrors).toEqual([]);
 });
 
+test('serves the supplied backgrounds and assigns one to each screen', async ({ page, request }) => {
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-screen', 'workbench');
+  const workbenchBackground = await page.locator('body').evaluate((element) => getComputedStyle(element, '::before').backgroundImage);
+  expect(workbenchBackground).toContain('/images/workbench.png');
+  const evidenceBackground = await page.locator('#detail-dialog').evaluate((element) => getComputedStyle(element).backgroundImage);
+  expect(evidenceBackground).toContain('/images/evidence-dialogue.png');
+
+  await page.locator('body').evaluate((element) => { element.dataset.screen = 'signin'; });
+  const signInBackground = await page.locator('body').evaluate((element) => getComputedStyle(element, '::before').backgroundImage);
+  expect(signInBackground).toContain('/images/sign-in.png');
+
+  for (const image of ['sign-in.png', 'workbench.png', 'evidence-dialogue.png']) {
+    const response = await request.get(`/images/${image}`);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('image/png');
+  }
+});
+
+test('publishes the provider requirements and states which hosted connections are unavailable', async ({ page }) => {
+  const response = await page.goto('/setup.html');
+  expect(response.status()).toBe(200);
+  await expect(page.getByRole('heading', { name: 'Bring your accounts. Keep provider costs yours.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'TestMu AI / Kane' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Codex with ChatGPT' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'What is usable today' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Create a TestMu AI account' })).toHaveAttribute('href', 'https://www.testmuai.com/register/');
+});
+
 test('loads a real bundled task prompt without creating fabricated run records', async ({ page }) => {
   test.setTimeout(45_000);
   await page.goto('/');

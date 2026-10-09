@@ -54,7 +54,7 @@ npm install -g @openai/codex
 codex login
 ```
 
-These logins are local to the computer running PatchLoop. In the hosted product, users should only sign in with Google; PatchLoop will own and pay for its Kane and Codex provider accounts. Hosted run execution remains disabled until the operator-owned credentials are integrated behind isolated workers. See [deployment and hosted authentication setup](docs/deployment.md#hosted-link-and-authentication-setup).
+These logins are local to the computer running PatchLoop. The intended hosted model is Google for PatchLoop sign-in, then each user authorizes their own Kane and ChatGPT usage. Hosted run execution remains disabled until provider connections and isolated workers are implemented, and OpenAI approves ChatGPT plan use for this remotely hosted app. See the [judge setup guide](public/setup.html) and [deployment and hosted authentication setup](docs/deployment.md#hosted-link-and-authentication-setup).
 
 PatchLoop launches the installed CLIs from the local machine. It does not accept API keys in the browser or `.env`, and it never returns account identity to the UI. If the installed package entry point cannot be found, set the corresponding local environment variable:
 
@@ -137,4 +137,4 @@ More detail: [Architecture and threat boundaries](docs/architecture.md), [claim-
 2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It exercises the real bundled app/API, including archive and restore.
 3. Read the [rubric proof map](docs/rubric-matrix.md) and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
 
-**Current release state:** the archive/restore behavior passed a real Kane run and the Docker Playwright suite. No public Render URL or recorded submission video exists yet. The native local workflow is the supported deployment; public multi-user hosting is documented as a security-gated follow-up.
+**Current release state:** the archive/restore behavior passed a real Kane run and the Docker Playwright suite. No public Render URL or recorded submission video exists yet. The native local workflow is the supported live deployment; the judge setup page describes the intended BYO-account hosted route and its current prerequisites. Render hosting incurs project-owner compute/storage costs, while user-owned Kane/ChatGPT accounts keep provider usage off the project account.

@@ -9,3 +9,25 @@
 .session-bar{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12;color:#aeb5b0;font:10px var(--mono)}
 .hosted-notice{margin:18px 0;padding:12px 14px;border:1px solid #5b4b29;background:#282317;border-radius:7px;color:#e6ca8d;font-size:11px;line-height:1.6}
 @media(max-width:520px){.sign-in-card{padding:28px 22px}.session-bar{justify-content:space-between;font-size:9px}}
+.setup-link,.setup-doc-link{color:var(--lime);font:10px var(--mono);text-decoration:none}
+.setup-link:hover,.setup-doc-link:hover{text-decoration:underline}
+.sign-in-setup-link{display:inline-block;margin-top:17px;color:#c1c9c3}
+.setup-page{padding-top:42px}
+.setup-intro{max-width:760px;margin-bottom:28px}
+.setup-intro h1{font:600 clamp(38px,5vw,58px)/1.02 var(--display);letter-spacing:-3px;margin:18px 0 14px}
+.setup-intro h1 em{font-style:normal;color:var(--lime)}
+.setup-intro p{max-width:650px;color:#a3aaa5;font-size:14px;line-height:1.7}
+.setup-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.setup-step{padding:22px;min-height:300px;background:linear-gradient(145deg,#1b1e1df2,#141616f2)}
+.setup-step h2,.setup-state h2{font-size:19px;margin:12px 0}
+.setup-step p,.setup-state p{color:#a3aaa5;font-size:11px;line-height:1.65}
+.setup-step ol{padding-left:18px;color:#b8bfba;font-size:10px;line-height:1.7}
+.setup-step li{padding:3px 0}
+.setup-step a:not(.setup-doc-link),.setup-state a:not(.setup-doc-link){color:#d5e9bd}
+.setup-status{display:inline-block;margin-top:10px;border:1px solid #3a4433;border-radius:20px;padding:6px 9px;color:#c5f36b;font:9px var(--mono)}
+.setup-doc-link{display:inline-block;margin-top:8px}
+.setup-state{margin-top:16px;padding:22px;background:linear-gradient(145deg,#1b1e1df2,#141616f2)}
+.setup-links{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:12px}
+.setup-state strong{color:#f1f3ef}
+@media(max-width:850px){.setup-grid{grid-template-columns:1fr}.setup-step{min-height:0}}
+@media(max-width:520px){.setup-page{padding-top:25px}.setup-step,.setup-state{padding:18px}}
