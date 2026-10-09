@@ -1,0 +1,21 @@
+# Personal hackathon guides, pass, research, and private preparation stay local.
+/HACKATHON_BUILD_STANDARD_V2.md
+/HACKATHON_REBUILD_PLAYBOOK.md
+/Kane CLI Online Hackathon.pkpass
+/preparation/
+
+# Local PatchLoop state and secrets/artifacts.
+/.patchloop/
+/.env
+/.env.*
+!.env.example
+/artifacts/
+/test-results/
+/playwright-report/
+
+# Dependencies and OS/editor noise.
+/node_modules/
+**/node_modules/
+.DS_Store
+Thumbs.db
+docs/submission-copy.md

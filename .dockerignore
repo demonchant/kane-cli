@@ -1,0 +1,12 @@
+.git
+.patchloop
+preparation
+HACKATHON_BUILD_STANDARD_V2.md
+HACKATHON_REBUILD_PLAYBOOK.md
+Kane CLI Online Hackathon.pkpass
+node_modules
+test-results
+playwright-report
+artifacts
+.env
+.env.*

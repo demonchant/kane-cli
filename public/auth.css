@@ -1,0 +1,11 @@
+[hidden]{display:none!important}
+.sign-in-screen{min-height:calc(100vh - 145px);display:grid;place-items:center;padding:36px 0}
+.sign-in-card{width:min(520px,100%);padding:42px;border:1px solid #2b302d;border-radius:14px;background:linear-gradient(145deg,#1b1e1d,#141616);box-shadow:0 24px 90px #0005}
+.sign-in-card h1{font:600 clamp(36px,6vw,52px)/1.05 var(--display);letter-spacing:-2.5px;margin:22px 0 15px}
+.sign-in-card h1 em{font-style:normal;color:var(--lime)}
+.sign-in-card p{color:#a3aaa5;font-size:13px;line-height:1.7}
+.google-sign-in{text-decoration:none;margin-top:10px}
+.sign-in-error{margin:18px 0 0!important;padding:12px;border:1px solid #704141;border-radius:6px;color:#ffb5b5!important;font-size:11px!important}
+.session-bar{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12;color:#aeb5b0;font:10px var(--mono)}
+.hosted-notice{margin:18px 0;padding:12px 14px;border:1px solid #5b4b29;background:#282317;border-radius:7px;color:#e6ca8d;font-size:11px;line-height:1.6}
+@media(max-width:520px){.sign-in-card{padding:28px 22px}.session-bar{justify-content:space-between;font-size:9px}}

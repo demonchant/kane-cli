@@ -1,0 +1,96 @@
+services:
+  patchloop:
+    build: .
+    image: patchloop:local
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    volumes:
+      - patchloop-state:/app/.patchloop
+    environment:
+      PATCHLOOP_HOST: 0.0.0.0
+      PATCHLOOP_PORT: 4173
+    ports:
+      - "127.0.0.1:4173:4173"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  e2e:
+    profiles: [test]
+    build:
+      context: .
+      dockerfile: e2e.Dockerfile
+    image: patchloop-e2e:local
+    init: true
+    ipc: host
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m,uid=1000,gid=1000
+    volumes:
+      - ./artifacts/playwright:/artifacts
+    environment:
+      BASE_URL: http://patchloop-test:4173
+      DEMO_URL: http://demo-test:4180
+      TEST_OUTPUT_DIR: /artifacts/results
+      TEST_HTML_REPORT: /artifacts/report
+    depends_on:
+      patchloop-test:
+        condition: service_healthy
+      demo-test:
+        condition: service_healthy
+    command: ["npm", "run", "test:e2e"]
+  patchloop-test:
+    profiles: [test]
+    build: .
+    image: patchloop:local
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    environment:
+      PATCHLOOP_HOST: 0.0.0.0
+      PATCHLOOP_PORT: 4173
+      PATCHLOOP_DATA_DIR: /tmp/patchloop-e2e
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+  demo-test:
+    profiles: [test]
+    image: patchloop:local
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    environment:
+      PATCHLOOP_HOST: 0.0.0.0
+      PATCHLOOP_PORT: 4180
+      PATCHLOOP_DATA_DIR: /tmp/patchloop-demo-e2e
+    command: ["node", "demo-template/server.mjs"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4180/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+volumes:
+  patchloop-state:

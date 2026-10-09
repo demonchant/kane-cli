@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: patchloop-web
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: patchloop-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PATCHLOOP_AUTH_MODE
+        value: google
+      - key: PATCHLOOP_EXECUTION_MODE
+        value: disabled
+      - key: PATCHLOOP_DATA_DIR
+        value: /var/data/.patchloop
+      - key: PATCHLOOP_PUBLIC_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: PATCHLOOP_SESSION_SECRET
+        generateValue: true

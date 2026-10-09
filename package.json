@@ -1,0 +1,23 @@
+{
+  "name": "patchloop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A local-first, evidence-linked repair loop for coding agents and Kane CLI.",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "test": "node --test",
+    "test:e2e": "playwright test",
+    "check": "node --check server.mjs && node --check lib/engine.mjs && node --check lib/store.mjs && node --check lib/process.mjs && node --check lib/repeatability.mjs && node --check lib/google-auth.mjs && node --check lib/authorization.mjs && node --check public/app.js && node --check demo-template/server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  },
+  "dependencies": {
+    "google-auth-library": "^11.2.0"
+  }
+}
