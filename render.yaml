@@ -19,11 +19,5 @@ services:
         value: worker
       - key: PATCHLOOP_DATA_DIR
         value: /var/data/.patchloop
-      - key: PATCHLOOP_PUBLIC_URL
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
       - key: PATCHLOOP_SESSION_SECRET
         generateValue: true

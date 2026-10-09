@@ -187,7 +187,12 @@ async function initialize() {
       document.body.dataset.screen = 'signin';
       $('#sign-in-screen').hidden = false;
       $('#app-main').hidden = true;
-      $('.privacy').innerHTML = '<i></i> Sign in required';
+      if (activeSession.authReady === false) {
+        $('.google-sign-in').hidden = true;
+        $('#sign-in-error').hidden = false;
+        $('#sign-in-error').textContent = 'Google sign-in is not configured yet. The site owner must add the OAuth client ID and secret in Render.';
+        $('.privacy').innerHTML = '<i></i> Setup pending';
+      } else $('.privacy').innerHTML = '<i></i> Sign in required';
       return;
     }
     document.body.dataset.screen = 'workbench';

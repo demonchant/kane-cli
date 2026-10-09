@@ -21,9 +21,9 @@ Each user needs Node.js 20+, Git, Chrome, Kane CLI access and credits, and Codex
 
 ### 1. Push the repository and create a Render Blueprint
 
-Push the code to `https://github.com/demonchant/kane-cli` on `main`. In Render, choose **New → Blueprint**, connect that GitHub repository and branch, and review `render.yaml`. The blueprint defines the Node web service, health check, persistent data disk, Google login, and worker-queue mode. Create the service when ready. The current Blueprint selects a paid Starter instance and a 1 GB persistent disk; review the current amount in the Render dashboard before confirming.
+Push the code to `https://github.com/demonchant/kane-cli` on `main`. In Render, choose **New → Blueprint**, connect that GitHub repository and branch, and review `render.yaml`. The blueprint defines the Node web service, health check, persistent data disk, Google login, and worker-queue mode. Create the service when ready. Google login is deliberately left pending until you add your OAuth client after Render assigns the public URL. The current Blueprint selects a paid Starter instance and a 1 GB persistent disk; review the current amount in the Render dashboard before confirming.
 
-Render creates the public service URL after the service is created. Find it at the top of the service page in the Render Dashboard, or in the service's Settings. It will look like `https://patchloop-web.onrender.com`; the exact generated hostname may differ. A URL cannot be supplied before the service exists. Render web services receive a public `onrender.com` subdomain and must listen on `0.0.0.0` and the assigned `PORT`; this project already does both in hosted mode. See [Render web services](https://render.com/docs/web-services) and [Render's first deploy guide](https://render.com/docs/your-first-deploy).
+Render creates the public service URL after the service is created. Find it at the top of the service page in the Render Dashboard, or in the service's Settings. It will look like `https://patchloop-web.onrender.com`; the exact generated hostname may differ. A URL cannot be supplied before the service exists. Render web services receive a public `onrender.com` subdomain and must listen on `0.0.0.0` and the assigned `PORT`; this project already does both in hosted mode. PatchLoop reads Render's `RENDER_EXTERNAL_URL` automatically, so you do not need to guess or paste the site URL into an environment variable. See [Render web services](https://render.com/docs/web-services) and [Render's first deploy guide](https://render.com/docs/your-first-deploy).
 
 ### 2. Configure Google OAuth
 
@@ -38,16 +38,15 @@ The OAuth app only requests `openid`, `email`, and `profile`. It uses Google to 
 
 ### 3. Set Render environment values and deploy
 
-In the Render service's **Environment** page, set the following. `render.yaml` already sets `PATCHLOOP_AUTH_MODE=google`, `PATCHLOOP_EXECUTION_MODE=worker`, `PATCHLOOP_DATA_DIR=/var/data/.patchloop`, and generates `PATCHLOOP_SESSION_SECRET`.
+In the Render service's **Environment** page, add the two Google values below. `render.yaml` already sets `PATCHLOOP_AUTH_MODE=google`, `PATCHLOOP_EXECUTION_MODE=worker`, `PATCHLOOP_DATA_DIR=/var/data/.patchloop`, and generates `PATCHLOOP_SESSION_SECRET`. If OAuth values are missing, the app stays in setup-pending mode: health checks work, but sign-in and user APIs remain unavailable.
 
 | Variable | Value |
 | --- | --- |
-| `PATCHLOOP_PUBLIC_URL` | Exact HTTPS origin from the Render service page, with no trailing path |
 | `GOOGLE_CLIENT_ID` | Web application client ID from Google Cloud |
 | `GOOGLE_CLIENT_SECRET` | Matching client secret; keep it marked secret |
 | `PATCHLOOP_SESSION_SECRET` | Keep the generated secret; it must be at least 32 bytes |
 
-Save the environment and deploy/redeploy. Check `https://YOUR-SERVICE.onrender.com/api/health`, then open the site and sign into Google. If sign-in fails, check the origin, redirect URI, client ID, secret, and OAuth audience/test-user settings.
+Save the environment and deploy/redeploy. Check `https://YOUR-SERVICE.onrender.com/api/health`, then open the site and sign into Google. If sign-in fails, check the origin, redirect URI, client ID, secret, and OAuth audience/test-user settings. `PATCHLOOP_PUBLIC_URL` is an optional override; Render deployments should use `RENDER_EXTERNAL_URL` automatically.
 
 ### 4. Pair each user's local runner
 

@@ -15,15 +15,16 @@ const STATE_DIR = path.resolve(process.env.PATCHLOOP_DATA_DIR ?? path.join(ROOT,
 const AUTH_MODE = process.env.PATCHLOOP_AUTH_MODE ?? 'local';
 if (!['local', 'google'].includes(AUTH_MODE)) throw new Error('PATCHLOOP_AUTH_MODE must be local or google.');
 const HOSTED = AUTH_MODE === 'google';
+const PUBLIC_URL = process.env.PATCHLOOP_PUBLIC_URL ?? process.env.RENDER_EXTERNAL_URL;
 const EXECUTION_MODE = process.env.PATCHLOOP_EXECUTION_MODE ?? (HOSTED ? 'disabled' : 'local');
 if (!['disabled', 'local', 'worker'].includes(EXECUTION_MODE)) throw new Error('PATCHLOOP_EXECUTION_MODE must be disabled, local, or worker.');
 if (HOSTED && EXECUTION_MODE === 'local') throw new Error('Google hosted mode cannot run local task execution on the web service.');
 if (!HOSTED && EXECUTION_MODE === 'worker') throw new Error('Worker queue mode requires Google hosted authentication.');
 const EXECUTION_ENABLED = EXECUTION_MODE !== 'disabled';
-const auth = HOSTED ? createGoogleAuth({
+const auth = HOSTED && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && PUBLIC_URL && process.env.PATCHLOOP_SESSION_SECRET ? createGoogleAuth({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  publicUrl: process.env.PATCHLOOP_PUBLIC_URL,
+  publicUrl: PUBLIC_URL,
   sessionSecret: process.env.PATCHLOOP_SESSION_SECRET,
 }) : null;
 const HOST = process.env.PATCHLOOP_HOST ?? (HOSTED ? '0.0.0.0' : '127.0.0.1');
@@ -63,7 +64,8 @@ function sameOrigin(req) {
 }
 
 function userFor(req) {
-  return auth ? auth.readSession(req.headers.cookie) : { sub: 'local', email: '', name: 'Local user' };
+  if (HOSTED) return auth?.readSession(req.headers.cookie) ?? null;
+  return { sub: 'local', email: '', name: 'Local user' };
 }
 
 function canReadRun(user, run) {
@@ -80,11 +82,15 @@ async function route(req, res) {
   if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { ok: true, name: 'PatchLoop', version: '1.0.0', mode: process.env.PATCHLOOP_TARGET_REPO ? 'configured' : 'bundled-demo' });
   if (req.method === 'GET' && url.pathname === '/api/session') {
     const user = userFor(req);
-    return send(res, 200, { mode: AUTH_MODE, authenticated: Boolean(user), user: user ? { email: user.email, name: user.name } : null, executionEnabled: EXECUTION_ENABLED });
+    return send(res, 200, { mode: AUTH_MODE, authenticated: Boolean(user), authReady: !HOSTED || Boolean(auth), user: user ? { email: user.email, name: user.name } : null, executionEnabled: EXECUTION_ENABLED });
   }
-  if (HOSTED && req.method === 'GET' && url.pathname === '/auth/google') return redirect(res, auth.start(res));
+  if (HOSTED && req.method === 'GET' && url.pathname === '/auth/google') {
+    if (!auth) return send(res, 503, { error: 'Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Render, then redeploy.' });
+    return redirect(res, auth.start(res));
+  }
   if (HOSTED && req.method === 'GET' && url.pathname === '/auth/google/callback') {
     try {
+      if (!auth) return send(res, 503, { error: 'Google sign-in is not configured yet.' });
       if (url.searchParams.has('error')) throw new Error('Google sign-in was cancelled.');
       await auth.complete(req, res, url);
       return redirect(res, '/');
@@ -93,14 +99,15 @@ async function route(req, res) {
     }
   }
   if (HOSTED && req.method === 'POST' && url.pathname === '/auth/logout') {
+    if (!auth) return send(res, 503, { error: 'Google sign-in is not configured yet.' });
     const origin = req.headers.origin;
-    if (!origin || !sameOrigin(req) || new URL(process.env.PATCHLOOP_PUBLIC_URL).origin !== new URL(origin).origin) return send(res, 403, { error: 'Cross-origin request rejected.' });
+    if (!origin || !sameOrigin(req) || new URL(PUBLIC_URL).origin !== new URL(origin).origin) return send(res, 403, { error: 'Cross-origin request rejected.' });
     auth.clear(res);
     return send(res, 200, { ok: true });
   }
 
   if (HOSTED && req.method === 'POST' && url.pathname === '/api/worker/exchange') {
-    if (req.headers.origin && (!sameOrigin(req) || new URL(process.env.PATCHLOOP_PUBLIC_URL).origin !== new URL(req.headers.origin).origin)) return send(res, 403, { error: 'Cross-origin request rejected.' });
+    if (req.headers.origin && (!sameOrigin(req) || new URL(PUBLIC_URL).origin !== new URL(req.headers.origin).origin)) return send(res, 403, { error: 'Cross-origin request rejected.' });
     if (EXECUTION_MODE !== 'worker') return send(res, 503, { error: 'The local runner is not enabled on this deployment.' });
     const { code } = await bodyJson(req, 2000);
     const pending = typeof code === 'string' ? pairingCodes.get(code) : null;
@@ -143,7 +150,7 @@ async function route(req, res) {
   if (HOSTED && url.pathname.startsWith('/api/') && !['/api/health', '/api/session'].includes(url.pathname) && !user) return send(res, 401, { error: 'Sign in with Google to access your private PatchLoop session.' });
   if (req.method !== 'GET') {
     const origin = req.headers.origin;
-    const originOk = sameOrigin(req) && (!HOSTED || (origin && new URL(process.env.PATCHLOOP_PUBLIC_URL).origin === new URL(origin).origin));
+    const originOk = sameOrigin(req) && (!HOSTED || (origin && PUBLIC_URL && new URL(PUBLIC_URL).origin === new URL(origin).origin));
     if (!originOk) return send(res, 403, { error: 'Cross-origin request rejected.' });
   }
 
