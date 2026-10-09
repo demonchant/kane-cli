@@ -29,6 +29,12 @@ function showNotice(message, error = false) {
 }
 
 function renderPreflight(result) {
+  if (result.hosted) {
+    const worker = result.worker ?? {};
+    $('#preflight').innerHTML = `<div class="preflight-row"><span class="preflight-name">Private local runner</span><span class="preflight-value ${worker.connected ? 'ok' : 'bad'}">${worker.connected ? (worker.busy ? 'Working' : 'Connected') : 'Offline'}</span></div><div class="preflight-row"><span class="preflight-name">Provider sign-ins</span><span class="preflight-value">Stay on your computer</span></div>`;
+    $('#worker-state').textContent = worker.connected ? (worker.busy ? 'Your local runner is processing a task.' : 'Your local runner is connected and waiting for tasks.') : 'Start the local runner on your computer to process queued tasks.';
+    return;
+  }
   const rows = [
     ['Kane CLI', result.kane.installed ? result.kane.version : 'Not found'],
     ['Kane sign-in', result.kane.authenticated ? 'Authenticated' : 'Sign-in needed'],
@@ -52,7 +58,7 @@ async function loadPreflight() {
 }
 
 function eventLabel(event) {
-  return ({ created: 'Task submitted', verification_started: 'Kane browser run started', kane_flow_prepared: 'Kane prepared the flow', kane_action_started: 'Kane action started', verification_finished: 'Kane browser run completed', repair_started: 'Codex repair started', repair_finished: 'Codex repair completed', setup_error: 'Setup failed', agent_error: 'Agent stopped' })[event.type] ?? event.type;
+  return ({ created: 'Task submitted', worker_claimed: 'Local runner accepted task', verification_queued: 'Kane run queued', repair_queued: 'Repair queued', worker_lost: 'Local runner disconnected', worker_disconnected: 'Local runner disconnected', verification_started: 'Kane browser run started', kane_flow_prepared: 'Kane prepared the flow', kane_action_started: 'Kane action started', verification_finished: 'Kane browser run completed', repair_started: 'Codex repair started', repair_finished: 'Codex repair completed', setup_error: 'Setup failed', agent_error: 'Agent stopped' })[event.type] ?? event.type;
 }
 
 function renderRun(run) {
@@ -101,6 +107,24 @@ objectiveInput.addEventListener('input', counts);
 $('#refresh').addEventListener('click', () => { void loadRuns(); void loadPreflight(); });
 $('#check-setup').addEventListener('click', () => void loadPreflight());
 
+$('#pair-worker').addEventListener('click', async () => {
+  const button = $('#pair-worker');
+  button.disabled = true;
+  try {
+    const { code } = await api('/api/worker/pair', { method: 'POST', body: '{}' });
+    const command = `npm run worker -- --url ${location.origin} --pair-code ${code}`;
+    $('#pair-command').textContent = `${command}\n\nThe code works once and expires in 10 minutes. After pairing, start it with: npm run worker -- --url ${location.origin}`;
+    $('#pair-command').hidden = false;
+    $('#copy-pair-command').hidden = false;
+    showNotice('Pairing code created. Run the first command on the computer with Kane and Codex installed.');
+  } catch (error) { showNotice(error.message, true); }
+  finally { button.disabled = false; }
+});
+$('#copy-pair-command').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#pair-command').textContent.split('\n')[0]); showNotice('Pairing command copied.'); }
+  catch { showNotice('Copy was blocked by the browser. Select and copy the first line.', true); }
+});
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!form.reportValidity()) return;
@@ -109,7 +133,7 @@ form.addEventListener('submit', async (event) => {
   notice.hidden = true;
   try {
     const { run } = await api('/api/runs', { method: 'POST', body: JSON.stringify({ task: taskInput.value, objective: objectiveInput.value }) });
-    showNotice(`Task ${run.id.slice(0, 8)} created. Kane is starting a real browser run.`);
+    showNotice(activeSession?.mode === 'google' ? `Task ${run.id.slice(0, 8)} is queued for your local runner.` : `Task ${run.id.slice(0, 8)} created. Kane is starting a real browser run.`);
     taskInput.value = '';
     objectiveInput.value = '';
     counts();
@@ -136,12 +160,12 @@ runsElement.addEventListener('click', async (event) => {
     if (action === 'repair') {
       if (!confirm('Send this recorded Kane failure and the original task to Codex in an isolated worktree?')) return;
       await api(`/api/runs/${id}/repair`, { method: 'POST' });
-      showNotice('Repair started. Codex received the recorded Kane failure; the objective remains unchanged.');
+      showNotice(activeSession?.mode === 'google' ? 'Repair queued for your local runner. The recorded evidence and objective remain unchanged.' : 'Repair started. Codex received the recorded Kane failure; the objective remains unchanged.');
       await loadRuns();
     }
     if (action === 'verify') {
       await api(`/api/runs/${id}/verify`, { method: 'POST' });
-      showNotice('Kane is rerunning the original objective against the repaired worktree.');
+      showNotice(activeSession?.mode === 'google' ? 'The unchanged objective is queued for your local runner.' : 'Kane is rerunning the original objective against the repaired worktree.');
       await loadRuns();
     }
   } catch (error) { showNotice(error.message, true); }
@@ -179,11 +203,16 @@ async function initialize() {
         $('#submit-run').disabled = true;
         $('.form-hint').textContent = 'Live Kane/Codex runs are waiting for the isolated hosted worker.';
         $('#setup-title').textContent = 'Hosted runner';
-        $('.privacy-note span:last-child').textContent = 'Your run records are scoped to your Google account. Hosted execution remains disabled until isolated workers are configured.';
+        $('.privacy-note span:last-child').textContent = 'Your run records are scoped to your Google account. Task execution is turned off for this deployment.';
+      } else {
+        $('#worker-connect').hidden = false;
+        $('#setup-title').textContent = 'Your local runner';
+        $('.form-hint').textContent = 'Runs on your computer with your Kane and Codex sign-ins.';
+        $('.privacy-note span:last-child').textContent = 'Task execution and provider sign-ins stay on your computer. Only run history and review evidence sync to your private session.';
       }
     }
     await Promise.all([loadPreflight(), loadRuns()]);
-    if (activeSession.mode === 'google' && !activeSession.executionEnabled) setInterval(() => { void loadRuns(); }, 1800);
+    if (activeSession.mode === 'google') setInterval(() => { void loadRuns(); void loadPreflight(); }, 3000);
     if (activeSession.mode === 'local') setInterval(() => { void loadRuns(); }, 1800);
   } catch (error) {
     document.body.dataset.screen = 'signin';

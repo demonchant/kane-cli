@@ -29,7 +29,7 @@
       </main>
 
       <main id="app-main" hidden>
-        <div class="hosted-notice" id="hosted-notice" role="status" hidden>Private sign-in is active. Hosted Kane/Codex runs will be enabled after isolated per-user workers are configured. Your private run history is still available.</div>
+        <div class="hosted-notice" id="hosted-notice" role="status" hidden>Hosted execution is disabled on this deployment. Your private Google session is available.</div>
         <div class="session-bar" id="session-bar" hidden><span id="signed-in-user"></span><button class="subtle-button" id="sign-out" type="button">Sign out</button></div>
         <section class="hero" aria-labelledby="headline">
           <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> THE VERIFICATION LOOP</div><h1 id="headline">Code changed.<br><em>Did it work?</em></h1><p>Give an agent a real browser failure. Keep the acceptance test fixed. Let Kane verify the repair.</p></div>
@@ -63,6 +63,12 @@
               <div id="preflight" class="preflight-list" aria-live="polite"><div class="preflight-loading"><span class="spinner"></span> Checking local tools…</div></div>
               <div class="privacy-note"><span class="shield">◈</span><span>Prompts, run history, and worktrees stay on this machine. CLI auth is never shown here.</span></div>
             </section>
+            <div id="worker-connect" class="worker-connect" hidden>
+              <p class="worker-state" id="worker-state">Pair a local runner to use your own Kane and Codex sign-ins.</p>
+              <button class="small-button" id="pair-worker" type="button">Connect local runner</button>
+              <pre id="pair-command" class="pair-command" hidden></pre>
+              <button class="small-button" id="copy-pair-command" type="button" hidden>Copy command</button>
+            </div>
             <section class="panel guardrail-panel" aria-labelledby="guardrails-title">
               <div class="eyebrow small">BUILT-IN GUARDRAILS</div><h2 id="guardrails-title">Evidence before edits.</h2>
               <ul class="guardrail-list"><li><span>01</span>Acceptance objective is hashed and fixed</li><li><span>02</span>Agent works in an isolated Git worktree</li><li><span>03</span>Real Kane output and exit code set the verdict</li><li><span>04</span>Ambiguous runs stop for human review</li><li><span>05</span>Maximum two repair attempts per task</li></ul>

@@ -12,64 +12,68 @@
   <body data-screen="workbench">
     <div class="shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="PatchLoop home"><span class="brand-mark" aria-hidden="true">↻</span><span>patchloop</span><span class="brand-tag">JUDGE SETUP</span></a>
+        <a class="brand" href="/" aria-label="PatchLoop home"><span class="brand-mark" aria-hidden="true">↻</span><span>patchloop</span><span class="brand-tag">RUNNER SETUP</span></a>
         <div class="topbar-right"><a class="setup-link" href="/">Back to PatchLoop →</a></div>
       </header>
 
       <main class="setup-page">
         <section class="setup-intro">
-          <div class="eyebrow"><span class="eyebrow-line"></span> WHAT TO BRING</div>
-          <h1>Bring your accounts.<br><em>Keep provider costs yours.</em></h1>
-          <p>PatchLoop fixes an acceptance objective, asks Kane to test the app in a real browser, and can send a repeated failure to Codex for a reviewed repair and same-objective rerun. Provider use belongs to each user.</p>
+          <div class="eyebrow"><span class="eyebrow-line"></span> RUN PATCHLOOP FROM A LINK</div>
+          <h1>Sign in on the site.<br><em>Run tools on your computer.</em></h1>
+          <p>Google keeps your hosted PatchLoop session and run history private. A small local runner uses the Kane and Codex CLI sign-ins on your computer and never uploads their local authentication stores.</p>
         </section>
 
         <section class="hosted-notice" role="status">
-          <strong>Hosted live runs are not enabled yet.</strong> This page tells you what the live service is being built to use. Google sign-in may identify a PatchLoop account, but it does not connect Kane or Codex. Do not paste provider credentials into this site; the secure connection forms and isolated run workers are not available in this release.
+          The Render site queues tasks and stores private run records. The local runner performs Kane browser checks and Codex repairs on your computer. Keep the runner open while you want tasks to run.
         </section>
 
         <section class="setup-grid" aria-label="What you need to use PatchLoop">
           <article class="panel setup-step">
             <div class="eyebrow small">01 · PATCHLOOP ACCOUNT</div>
-            <h2>Google account</h2>
-            <p>Use Google to sign into a hosted PatchLoop account. That account keeps your PatchLoop session and run history separate from other users. Google login does not authorize a Kane test or a Codex repair.</p>
-            <span class="setup-status">No provider usage charge</span>
+            <h2>Sign in with Google</h2>
+            <p>Google identifies your private PatchLoop session. It does not sign you into Kane or Codex. Run records are scoped to the Google account that created them.</p>
+            <span class="setup-status">No provider credential form</span>
           </article>
 
           <article class="panel setup-step">
             <div class="eyebrow small">02 · BROWSER VERIFICATION</div>
-            <h2>TestMu AI / Kane</h2>
-            <p>Bring a TestMu AI account with Kane access and remaining credits. The organizer announcement for this event lists $100 in Kane CLI credits for registered participants; check your TestMu account for your own eligibility, balance, and expiration.</p>
-            <ol>
-              <li><a href="https://www.testmuai.com/register/" rel="noreferrer">Create or sign into TestMu AI</a>.</li>
-              <li>Claim the event credits if your account is eligible.</li>
-              <li>Get the Kane username and access key from the TestMu credentials area.</li>
-              <li>Keep the access key private. Enter it only in a future PatchLoop Kane connection form after that form is available.</li>
-            </ol>
+            <h2>Kane CLI</h2>
+            <p>Install Kane on the computer that will run the local helper, sign in using your TestMu account, and make sure your account has available Kane credits.</p>
+            <pre>npm install -g @testmuai/kane-cli
+kane-cli login --oauth</pre>
             <a class="setup-doc-link" href="https://www.testmuai.com/docs/kane-cli-authentication" rel="noreferrer">Kane authentication guide →</a>
           </article>
 
           <article class="panel setup-step">
             <div class="eyebrow small">03 · CODE REPAIR</div>
-            <h2>Codex with ChatGPT</h2>
-            <p>The intended no-API-bill path is for each user to authorize their own ChatGPT account and consent to eligible plan usage. This does not expose ChatGPT conversations. OpenAI documents that plan sharing for open-source and locally hosted tools is in preview; offering it in a remotely hosted service such as Render requires contacting OpenAI first.</p>
-            <ol>
-              <li>Bring a ChatGPT account that is eligible for the plan-usage feature and can approve its use.</li>
-              <li>PatchLoop must first receive OpenAI approval for a remotely hosted app and finish its secure OAuth integration.</li>
-              <li>When enabled, connect from PatchLoop’s own sign-in button. Never share a ChatGPT password, API key, or session token in task text or chat.</li>
-            </ol>
-            <a class="setup-doc-link" href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">OpenAI: ChatGPT plan use for open-source apps →</a>
+            <h2>Codex CLI</h2>
+            <p>Install Codex CLI and sign in locally with your ChatGPT account. PatchLoop runs the CLI on your computer. No OpenAI API key, ChatGPT password, or browser session token is entered into PatchLoop.</p>
+            <pre>npm install -g @openai/codex
+codex login
+codex login status</pre>
+            <a class="setup-doc-link" href="https://developers.openai.com/codex/auth" rel="noreferrer">OpenAI Docs: Codex authentication →</a>
           </article>
         </section>
 
         <section class="panel setup-state" aria-labelledby="setup-state-title">
-          <div class="eyebrow small">HOSTED STATUS</div>
-          <h2 id="setup-state-title">What is usable today</h2>
-          <p>The supported live workflow today runs locally on your computer: install Kane CLI and Codex CLI, sign into each using its official CLI flow, then start PatchLoop. Your own Kane credits and ChatGPT/Codex plan are used. Follow the repository’s <a href="https://github.com/demonchant/kane-cli#run-locally" rel="noreferrer">local setup instructions</a>.</p>
-          <p>The Render blueprint currently has hosted task execution disabled. A public link is not a complete live service until OpenAI approves hosted ChatGPT plan use, Kane and Codex connections are implemented, and per-run isolation and user-owned data storage are in place. No provider credentials are collected here.</p>
-          <p>Hosting itself can cost the project owner money. Render’s free web service sleeps after inactivity and loses local filesystem changes; the current blueprint uses paid compute and persistent storage. Provider BYO avoids the project paying model/test usage, but it does not make hosting or browser-worker compute free.</p>
+          <div class="eyebrow small">CONNECT THE LOCAL RUNNER</div>
+          <h2 id="setup-state-title">Use the hosted PatchLoop page</h2>
+          <ol>
+            <li>Install Node.js 20 or newer, Git, and Chrome on your computer.</li>
+            <li>Clone the public GitHub repository and run <code>npm ci</code> in the checkout.</li>
+            <li>Open the PatchLoop website and sign in with Google.</li>
+            <li>Select <strong>Connect local runner</strong>, then run the one-time pairing command it shows in PowerShell or a terminal.</li>
+            <li>Leave that terminal open. Your local runner will claim your queued tasks and sync status and evidence to your private website session.</li>
+          </ol>
+          <pre>git clone https://github.com/demonchant/kane-cli.git
+cd kane-cli
+npm ci</pre>
+          <p>The pairing code expires after 10 minutes and works once. After pairing, start the runner on later days with the command shown on the page without the pairing code. Its runner token stays in the ignored <code>.patchloop/remote-worker/</code> folder on that computer. To revoke the paired runner, run <code>npm run worker -- --url YOUR_PATCHLOOP_URL --disconnect</code>.</p>
+          <p>Your Kane and Codex sign-ins, target repository, worktrees, and provider usage remain local. PatchLoop sends task text, progress, pattern-redacted CLI evidence, and the reviewable diff to your private Google-owned session so the website can display the run. Avoid putting secrets in task text or code changes.</p>
+          <p>Running your own full local workbench is also supported: use <code>npm start</code> and open <code>http://127.0.0.1:4173</code>. See the repository README for the local workflow and optional target repository setup.</p>
           <div class="setup-links">
-            <a class="setup-doc-link" href="https://developers.openai.com/siwc/token-sharing-open-source/self-hosted-vms" rel="noreferrer">OpenAI: self-hosted VM credential flow →</a>
-            <a class="setup-doc-link" href="https://render.com/docs/free" rel="noreferrer">Render free-service limits →</a>
+            <a class="setup-doc-link" href="https://github.com/demonchant/kane-cli#run-locally" rel="noreferrer">Local setup in the repository →</a>
+            <a class="setup-doc-link" href="https://render.com/docs/web-services" rel="noreferrer">Render web service documentation →</a>
             <a class="setup-doc-link" href="/">Return to PatchLoop →</a>
           </div>
         </section>

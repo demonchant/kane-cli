@@ -54,7 +54,13 @@ npm install -g @openai/codex
 codex login
 ```
 
-These logins are local to the computer running PatchLoop. The intended hosted model is Google for PatchLoop sign-in, then each user authorizes their own Kane and ChatGPT usage. Hosted run execution remains disabled until provider connections and isolated workers are implemented, and OpenAI approves ChatGPT plan use for this remotely hosted app. See the [judge setup guide](public/setup.html) and [deployment and hosted authentication setup](docs/deployment.md#hosted-link-and-authentication-setup).
+These logins are local to the computer running PatchLoop. For hosted access, use the local runner flow below. It does not require hosted ChatGPT OAuth approval.
+
+### Use the hosted link with your local accounts
+
+The hosted runner keeps provider credentials on the user's computer and never uploads local CLI authentication stores. Sign into the website with Google, install this repository and the Kane/Codex CLIs locally, then use **Connect local runner** to pair that computer with a one-time code. Start the helper with the pairing command once; later, start it with `npm run worker -- --url https://YOUR-SERVICE.onrender.com`. Keep the terminal open while tasks are running. The runner sends task details, progress, pattern-redacted CLI evidence, and the reviewable diff to that Google account's private session. Avoid putting secrets in task text or code changes.
+
+The project operator pays for Render hosting and storage. Each user uses their own Kane credits and Codex/ChatGPT account. No OpenAI API key or hosted ChatGPT sign-in is required. See the [hosted deployment steps](docs/deployment.md#hosted-link-with-a-local-runner) for the Render URL and Google OAuth configuration.
 
 PatchLoop launches the installed CLIs from the local machine. It does not accept API keys in the browser or `.env`, and it never returns account identity to the UI. If the installed package entry point cannot be found, set the corresponding local environment variable:
 
@@ -137,4 +143,4 @@ More detail: [Architecture and threat boundaries](docs/architecture.md), [claim-
 2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It exercises the real bundled app/API, including archive and restore.
 3. Read the [rubric proof map](docs/rubric-matrix.md) and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
 
-**Current release state:** the archive/restore behavior passed a real Kane run and the Docker Playwright suite. No public Render URL or recorded submission video exists yet. The native local workflow is the supported live deployment; the judge setup page describes the intended BYO-account hosted route and its current prerequisites. Render hosting incurs project-owner compute/storage costs, while user-owned Kane/ChatGPT accounts keep provider usage off the project account.
+**Current release state:** no public Render URL is deployed from this repository yet. The hosted architecture now supports a Google-owned queue paired to a local runner; it requires the repository to be pushed and a Render service and Google OAuth client to be configured. The full local workbench remains supported. Render hosting incurs project-owner compute/storage costs, while user-owned Kane/Codex accounts keep provider usage off the project account.

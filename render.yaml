@@ -16,7 +16,7 @@ services:
       - key: PATCHLOOP_AUTH_MODE
         value: google
       - key: PATCHLOOP_EXECUTION_MODE
-        value: disabled
+        value: worker
       - key: PATCHLOOP_DATA_DIR
         value: /var/data/.patchloop
       - key: PATCHLOOP_PUBLIC_URL
