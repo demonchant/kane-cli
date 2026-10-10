@@ -142,6 +142,6 @@ More detail: [Architecture and threat boundaries](docs/architecture.md), [claim-
 
 1. Follow [local setup](#run-locally) and run `npm run check` and `npm test`.
 2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It exercises the real bundled app/API, including archive and restore.
-3. Read the [operations/demo guide](docs/demo-and-operations.md), [rubric proof map](docs/rubric-matrix.md), and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
+3. Read the [operations/demo guide](docs/demo-and-operations.md) and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
 
 **Current release state:** the maintainer reports the public Render site and Google sign-in are working at https://patchloop-web.onrender.com. The public repository includes the hosted queue and paired local runner. Local operation and hosted pairing are separate paths; the hosted runner must stay online to process jobs. Render hosting incurs project-owner compute/storage costs, while each user supplies their own Kane credits and Codex/ChatGPT sign-in. The supplied competition brief required project creation during the event window; this repository predates that window, so eligibility must be confirmed with the organizer and is not claimed here.
