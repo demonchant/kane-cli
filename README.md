@@ -58,7 +58,7 @@ These logins are local to the computer running PatchLoop. For hosted access, use
 
 ### Use the hosted link with your local accounts
 
-The hosted runner keeps provider credentials on the user's computer and never uploads local CLI authentication stores. Sign into the website with Google, install this repository and the Kane/Codex CLIs locally, then use **Connect local runner** to pair that computer with a one-time code. Start the helper with the pairing command once; later, start it with `npm run worker -- --url https://YOUR-SERVICE.onrender.com`. Keep the terminal open while tasks are running. The runner sends task details, progress, pattern-redacted CLI evidence, and the reviewable diff to that Google account's private session. Avoid putting secrets in task text or code changes.
+The hosted site is [patchloop-web.onrender.com](https://patchloop-web.onrender.com). Provider credentials stay on the user's computer; local CLI authentication stores are not uploaded. Sign into the website with Google, install this repository and the Kane/Codex CLIs locally, then use **Connect local runner** to pair that computer with a one-time code. Start the helper with the pairing command once; later, start it with `npm run worker -- --url https://patchloop-web.onrender.com`. Keep the terminal open while tasks are running. The runner sends task details, progress, pattern-redacted CLI evidence, and the reviewable diff to that Google account's private session. Avoid putting secrets in task text or code changes. See [operations and demo runbook](docs/demo-and-operations.md) for first-time setup, normal use, troubleshooting, and the recording script.
 
 The project operator pays for Render hosting and storage. Each user uses their own Kane credits and Codex/ChatGPT account. No OpenAI API key or hosted ChatGPT sign-in is required. See the [hosted deployment steps](docs/deployment.md#hosted-link-with-a-local-runner) for the Render URL and Google OAuth configuration.
 
@@ -112,14 +112,15 @@ The preset only fills the two input fields. It creates no run or seeded app data
 
 ## Evidence and current limits
 
-- The product code and private state are local-first; no hosted service or user account is required beyond the native Kane/Codex CLIs.
+- The hosted site is deployed at [patchloop-web.onrender.com](https://patchloop-web.onrender.com). The maintainer reports that Google sign-in works; a complete hosted runner Kane/Codex task has not been independently verified in this checkout.
+- Provider CLIs and their authentication stores remain on each user's computer. Local Codex repair has produced a real worktree diff; do not present that local evidence as a hosted repair.
 - `npm test` covers objective hashing, final-event parsing, secret redaction, and state persistence.
 - The Playwright suite checks the UI and real local API without fabricating responses. It does not claim the Kane workflow ran.
 - Kane output parsing requires a final `run_end` event and zero process exit plus an observed successful result code/status. Unknown event formats fail closed.
 - Current worktree repair support is scoped to a Node target whose server honors the documented PatchLoop environment variables. A generic arbitrary-command adapter is not implemented.
 - An uncommitted target baseline is not copied; the selected repo must have a clean, committed state before verification.
 - Kane is a paid/credited third-party service. A live verification needs a signed-in TestMu AI account, available credits, network access, and a working Chrome installation.
-- Codex needs its own valid local sign-in. The product has not been observed to complete a Codex repair until one real task has run successfully.
+- Codex needs its own valid local sign-in. A hosted repair has not been independently observed from this checkout.
 
 ## Architecture
 
@@ -141,6 +142,6 @@ More detail: [Architecture and threat boundaries](docs/architecture.md), [claim-
 
 1. Follow [local setup](#run-locally) and run `npm run check` and `npm test`.
 2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It exercises the real bundled app/API, including archive and restore.
-3. Read the [rubric proof map](docs/rubric-matrix.md) and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
+3. Read the [operations/demo guide](docs/demo-and-operations.md), [rubric proof map](docs/rubric-matrix.md), and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
 
-**Current release state:** no public Render URL is deployed from this repository yet. The hosted architecture now supports a Google-owned queue paired to a local runner; it requires the repository to be pushed and a Render service and Google OAuth client to be configured. The full local workbench remains supported. Render hosting incurs project-owner compute/storage costs, while user-owned Kane/Codex accounts keep provider usage off the project account.
+**Current release state:** the maintainer reports the public Render site and Google sign-in are working at https://patchloop-web.onrender.com. The public repository includes the hosted queue and paired local runner. Local operation and hosted pairing are separate paths; the hosted runner must stay online to process jobs. Render hosting incurs project-owner compute/storage costs, while each user supplies their own Kane credits and Codex/ChatGPT sign-in. The supplied competition brief required project creation during the event window; this repository predates that window, so eligibility must be confirmed with the organizer and is not claimed here.

@@ -15,6 +15,8 @@ To use another local target, set `PATCHLOOP_TARGET_REPO` to a clean, committed G
 
 ## Hosted link with a local runner
 
+**Live service:** [https://patchloop-web.onrender.com](https://patchloop-web.onrender.com). The maintainer reports Google sign-in is now working. This checkout could not reach Render during this documentation update, so this is not an independent uptime or hosted end-to-end verification result.
+
 The hosted service provides Google sign-in, private run history, and a task queue. A paired local runner performs the real Kane and Codex work on the user's computer. Google credentials stay in the web session; Kane/Codex login profiles, target code, and worktrees stay on that computer and the CLI authentication stores are not uploaded. The hosted service receives task details, progress, pattern-redacted CLI evidence, and the reviewable diff so it can show run status and evidence. Avoid putting secrets in task text or code changes.
 
 Each user needs Node.js 20+, Git, Chrome, Kane CLI access and credits, and Codex CLI signed into their own ChatGPT account. No OpenAI API key or hosted ChatGPT sign-in is needed. The runner must remain open to pick up tasks. The project owner pays the Render hosting bill; each user consumes their own provider account allowance.
@@ -23,7 +25,7 @@ Each user needs Node.js 20+, Git, Chrome, Kane CLI access and credits, and Codex
 
 Push the code to `https://github.com/demonchant/kane-cli` on `main`. In Render, choose **New → Blueprint**, connect that GitHub repository and branch, and review `render.yaml`. The blueprint defines the Node web service, health check, persistent data disk, Google login, and worker-queue mode. Create the service when ready. Google login is deliberately left pending until you add your OAuth client after Render assigns the public URL. The current Blueprint selects a paid Starter instance and a 1 GB persistent disk; review the current amount in the Render dashboard before confirming.
 
-Render creates the public service URL after the service is created. Find it at the top of the service page in the Render Dashboard, or in the service's Settings. It will look like `https://patchloop-web.onrender.com`; the exact generated hostname may differ. A URL cannot be supplied before the service exists. Render web services receive a public `onrender.com` subdomain and must listen on `0.0.0.0` and the assigned `PORT`; this project already does both in hosted mode. PatchLoop reads Render's `RENDER_EXTERNAL_URL` automatically, so you do not need to guess or paste the site URL into an environment variable. See [Render web services](https://render.com/docs/web-services) and [Render's first deploy guide](https://render.com/docs/your-first-deploy).
+Render web services receive a public `onrender.com` subdomain and must listen on `0.0.0.0` and the assigned `PORT`; this project already does both in hosted mode. PatchLoop reads Render's `RENDER_EXTERNAL_URL` automatically, so you do not need to guess or paste the site URL into an environment variable. See [Render web services](https://render.com/docs/web-services) and [Render's first deploy guide](https://render.com/docs/your-first-deploy).
 
 ### 2. Configure Google OAuth
 
