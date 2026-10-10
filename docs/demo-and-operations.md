@@ -119,7 +119,7 @@ This repository's history predates the event build window described in the suppl
 
 ## Screen recording and narration
 
-The supplied recording shows target selection, two setup failures caused by a missing target path, a later Kane run that passed, and no worktree diff. It documents configuration recovery and the observed Kane pass; it does not document a Codex repair of the seeded showcase defect. The narration must not describe this as a completed code repair.
+The edited local QA recording shows showcase target selection, Kane's status changing from Running to Verified, the passed run details, and the signed-out screen. The run reports result code `100`, `success.complete`, and exit `0`, with no worktree diff. It demonstrates the Kane verification result, not a Codex repair of the seeded showcase defect.
 
 | Time | What to show | Voiceover |
 |---|---|---|
@@ -135,13 +135,13 @@ Do not show credentials, pairing codes, account details, unrelated browser tabs,
 
 ## Recorded verification evidence
 
-The committed [verification record](verification.md) reports the automated and earlier local results below. The screen recording separately shows one hosted worker run and its limitations:
+The committed [verification record](verification.md) reports the automated and earlier local results below. The edited local QA recording separately shows a Kane run and its limitations:
 
 - `npm.cmd run check` passed.
 - `npm.cmd test` passed (11 tests) on October 10, 2026, including a showcase manifest launch/health test with a local test CLI stub (not Kane evidence).
 - Docker Playwright passed (11 tests) on October 10, 2026, including picker selection and stale-target rejection.
 - The showcase HTTP smoke check reproduced the intentional `completed: false` restore regression; it did not run Kane or Codex.
-- The supplied hosted recording shows two target setup failures followed by Kane's passing result (code `100`, `success.complete`, exit `0`). Its run details show no code diff, so it does not demonstrate a Codex repair.
+- The edited local QA recording shows the run move from Running to Verified, with result code `100`, `success.complete`, exit `0`, and no code diff. It ends on the signed-out screen and does not demonstrate a Codex repair.
 - Kane run `db0ac6a2-2929-442f-a383-8e20d153ee28` passed the archive/restore objective with result code `100` (`success.complete`) and process exit `0`.
 - Earlier attempts `87ec7a34-99f2-4625-b63f-621de1d078b3` (failed) and `704c51dc-3e5e-490a-a049-0b881ad4a1a2` (timed out/inconclusive) remain distinct from that passing run.
 
