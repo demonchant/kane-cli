@@ -4,11 +4,21 @@
 
 ## One-paragraph submission copy
 
-PatchLoop is a local workbench for developers using coding agents who want browser evidence before accepting a change. It records a fixed natural-language acceptance objective, lets the user choose a bundled or locally configured repository, runs Kane against an isolated Git worktree, and keeps failures, setup errors, and inconclusive results distinct. After a repeatable failure, a developer can ask Codex to repair that worktree, review the diff, and rerun the unchanged objective. PatchLoop marks a task verified only from Kane's passing final event and successful process exit. A historic Kane run against the bundled app confirmed archive and restore behavior; that record does not demonstrate the separate seeded showcase repair. The showcase target and its intentional restore defect are provided for a live run, but no Kane/Codex repair run has been recorded for it yet. PatchLoop does not auto-merge or deploy changes.
+PatchLoop is a local workbench for developers using coding agents who want browser evidence before accepting a change. It records a fixed natural-language acceptance objective, lets the user choose a bundled or locally configured repository, runs Kane against an isolated Git worktree, and keeps failures, setup errors, and inconclusive results distinct. After a repeatable failure, a developer can ask Codex to repair that worktree, review the diff, and rerun the unchanged objective. PatchLoop marks a task verified only from Kane's passing final event and successful process exit. The screen recording captures a missing target configuration, its correction, and a later Kane pass on the showcase objective. Its run record has no code diff, so it does not demonstrate a Codex repair of the seeded restore defect. PatchLoop does not auto-merge or deploy changes.
 
-## Three-minute screen recording script
+## Voiceover script
 
-Record the real local app and actual run records. The historic bundled-demo run `db0ac6a2-2929-442f-a383-8e20d153ee28` is evidence for that bundled objective only. Record the showcase sequence only after running it, and show the IDs and objective hash from that session. Never replace a Kane result with a fixture or imply an old failed attempt passed.
+Every coding agent can produce a convincing change. But a plausible diff does not prove that the browser flow works. PatchLoop keeps the acceptance objective fixed, records what Kane sees in a real browser, and makes any repair reviewable.
+
+The showcase problem is simple to describe and easy to miss: after a completed task is archived and restored, its title and completed checkbox should both stay unchanged.
+
+To use PatchLoop, clone two repositories onto the computer that will run the task. The `kane-cli` repository is PatchLoop's local runner. The second checkout must be the app you intend to test or repair. Here, that is the separate PatchLoop Full Showcase repository. Review its source and manifest, and commit the starting state. PatchLoop creates a disposable Git worktree from that commit, leaving your selected checkout as the baseline.
+
+Install Node, Git, Chrome, Kane CLI, and Codex. Sign into Kane and Codex locally, then sign into the hosted PatchLoop page and pair the worker. Before starting the worker, set `PATCHLOOP_TARGET_REPO` to the target app's local path. Our first attempts stopped at setup because the worker had no target path. We corrected the configuration by pointing the worker to the showcase checkout and restarting it. After it reported both available repositories, the showcase appeared in the picker. We also fixed the picker refresh so status polling no longer interrupts repository selection.
+
+Next, select the target and submit the change request with its fixed browser objective. PatchLoop hashes the objective before Kane runs. In this recording, the run details show Kane's passing final result, result code 100, and process exit zero. They also show no code diff. This video documents the setup recovery and a Kane pass; it does not show Codex repairing the seeded bug. A repair claim needs repeated Kane failures, explicit Codex approval, a real diff, and a passing rerun of the same objective.
+
+The PatchLoop source and showcase target are published separately. The README and target guide explain cloning both repositories, local setup, pairing, target selection, and recovery from setup errors.
 
 | Time | Screen action | Voiceover |
 |---|---|---|

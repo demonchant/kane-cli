@@ -51,17 +51,36 @@ $env:PATCHLOOP_TARGET_REPO = 'C:\path\to\your\app'
 npm start
 ```
 
-For the hosted site, set the same variable in the terminal that starts the paired worker:
+For hosted use, clone **both** repositories onto the computer that runs the worker: PatchLoop's `demonchant/kane-cli` checkout and a separate local checkout of the project you intend PatchLoop to test or repair. Do not point `PATCHLOOP_TARGET_REPO` at the PatchLoop runner checkout unless PatchLoop itself is the target you want to test.
+
+For example, in Windows PowerShell, clone the showcase target next to the runner checkout:
 
 ```powershell
-$env:PATCHLOOP_TARGET_REPO = 'C:\path\to\your\app'
+cd $HOME
+git clone https://github.com/demonchant/patchloop-full-showcase.git
+```
+
+Review the target repository and its `patchloop.target.json` before running it. A cloned Git repository supplies a committed baseline by default. For your own project, commit the exact files you want PatchLoop to use; the worker creates a detached worktree from `HEAD`, so uncommitted edits in the target checkout are not included.
+
+Set the target path in the **same PowerShell session** that will start the worker. This example also checks that the checkout and manifest are present:
+
+```powershell
+$target = Join-Path $HOME 'patchloop-full-showcase'
+Test-Path (Join-Path $target 'patchloop.target.json')
+$env:PATCHLOOP_TARGET_REPO = (Resolve-Path $target).Path
 npm run worker -- --url https://patchloop-web.onrender.com
 ```
 
-The worker reports a sanitized catalog when it starts. Keep it running, refresh or wait for the picker, then choose the repository before submitting the task. Restart the worker after changing `PATCHLOOP_TARGET_REPO` or its manifest. Unavailable targets cannot be selected, and existing records retain their saved target.
+For your own application, replace the showcase path with its local checkout path. On first use, copy the one-time pairing command from the signed-in PatchLoop page and run it in this same terminal, after setting the variable:
+
+```powershell
+npm run worker -- --url https://patchloop-web.onrender.com --pair-code <ONE_TIME_CODE_FROM_PATCHLOOP>
+```
+
+The worker prints how many ready repository targets it registered. With the bundled demo and showcase configured, it should report **2 repository targets**. Keep that terminal open. Sign into the hosted site with the same Google account used to pair, refresh the page, and choose the named target before submitting a task. If the target is missing, stop the worker and check the path, `Test-Path` result, and target count; then start it again. Every new PowerShell window needs `PATCHLOOP_TARGET_REPO` set again before starting the worker. A `Setup failed` event that says to set this variable is a runner configuration problem, not a Kane failure; correct the configuration before replaying the run. Existing records retain their original target and objective.
 
 ## Showcase target
 
-[`examples/patchloop-full-showcase`](../examples/patchloop-full-showcase) is the standalone sample target published at [demonchant/patchloop-full-showcase](https://github.com/demonchant/patchloop-full-showcase). Clone it to the worker computer, set `PATCHLOOP_TARGET_REPO` to that checkout, and select **PatchLoop Full Showcase**. Its initial commit intentionally clears completion when a task is restored. The expected live demonstration is two failures of the fixed Kane objective, a human-approved Codex repair, diff review, and a pass of the unchanged objective.
+[`examples/patchloop-full-showcase`](../examples/patchloop-full-showcase) is the standalone sample target published at [demonchant/patchloop-full-showcase](https://github.com/demonchant/patchloop-full-showcase). Clone it as a separate checkout on the worker computer, set `PATCHLOOP_TARGET_REPO` to that path before starting the worker, and select **PatchLoop Full Showcase**. Its initial commit intentionally clears completion when a task is restored. The intended code-repair demonstration is two failures of the fixed Kane objective, a human-approved Codex repair, diff review, and a pass of the unchanged objective. A setup error or a Kane pass without a recorded repair diff does not demonstrate that repair loop.
 
-The showcase sequence has not been run as part of this change. Do not describe a Kane/Codex repair as passed until a real run record contains initial failure evidence and a successful same-objective Kane final event after the repair.
+The supplied screen recording shows the target setup error followed by a Kane pass with no code diff. It documents configuration recovery and the observed browser run, but does not demonstrate a Codex repair. Do not describe the seeded restore bug as repaired without recorded repeated failures, human-approved Codex output, a real diff, and a passing same-objective Kane rerun.

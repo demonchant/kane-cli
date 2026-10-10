@@ -58,7 +58,12 @@ These logins are local to the computer running PatchLoop. For hosted access, use
 
 ### Use the hosted link with your local accounts
 
-The hosted site is [patchloop-web.onrender.com](https://patchloop-web.onrender.com). Provider credentials stay on the user's computer; local CLI authentication stores are not uploaded. Sign into the website with Google, install this repository and the Kane/Codex CLIs locally, then use **Connect local runner** to pair that computer with a one-time code. Start the helper with the pairing command once; later, start it with `npm run worker -- --url https://patchloop-web.onrender.com`. Keep the terminal open while tasks are running. The runner sends task details, progress, pattern-redacted CLI evidence, and the reviewable diff to that Google account's private session. Avoid putting secrets in task text or code changes. See [operations and demo runbook](docs/demo-and-operations.md) for first-time setup, normal use, troubleshooting, and the recording script.
+The hosted site is [patchloop-web.onrender.com](https://patchloop-web.onrender.com). Provider credentials stay on the user's computer; local CLI authentication stores are not uploaded. There are two separate Git checkouts on the computer running a task:
+
+1. **PatchLoop's repository** (`demonchant/kane-cli`), which supplies the local runner.
+2. **The target application's repository**, which is the app PatchLoop will launch and verify. Clone the project you intend to fix locally too; for example, use `demonchant/patchloop-full-showcase` as the target when following the showcase walkthrough.
+
+Sign into PatchLoop with Google, install and authenticate Kane/Codex locally, and use **Connect local runner** to pair the computer with a one-time code. Set `PATCHLOOP_TARGET_REPO` to the target checkout in the same terminal before starting the worker. The worker must report its ready repository target count before the target appears in the picker. Keep the worker terminal open while tasks are running. The runner sends task details, progress, pattern-redacted CLI evidence, and the reviewable diff to that Google account's private session. Avoid putting secrets in task text or code changes. The complete [hosted setup and repair walkthrough](docs/demo-and-operations.md#hosted-user-workflow) covers cloning both repositories, pairing, selecting a target, replaying setup failures, and reviewing a repair.
 
 The project operator pays for Render hosting and storage. Each user uses their own Kane credits and Codex/ChatGPT account. No OpenAI API key or hosted ChatGPT sign-in is required. See the [hosted deployment steps](docs/deployment.md#hosted-link-with-a-local-runner) for the Render URL and Google OAuth configuration.
 

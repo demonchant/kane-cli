@@ -27,11 +27,13 @@ The hosted service does not provide Kane credits or Codex access. Every worker u
 
 Requirements: Windows, macOS, or Linux with Node.js 20+, Git, Chrome, a network connection, a signed-in Google account, Kane CLI access/credits, and Codex CLI access through ChatGPT sign-in.
 
-In a terminal:
+There are **two separate repositories** to clone on the local runner computer. PatchLoop's repository contains the app and worker. The target repository is the application you want PatchLoop to test or repair. For the showcase, clone the public showcase repository as a separate folder:
 
 ```powershell
+cd $HOME
 git clone https://github.com/demonchant/kane-cli.git
-cd kane-cli
+git clone https://github.com/demonchant/patchloop-full-showcase.git
+cd $HOME\kane-cli
 npm ci
 npm install -g @testmuai/kane-cli @openai/codex
 kane-cli login --oauth
@@ -39,23 +41,46 @@ codex login
 codex login status
 ```
 
-These CLI logins happen locally. Do not paste provider passwords, tokens, or auth files into the website, repository, or Render settings.
+For your own project, clone its GitHub repository to this computer too, then use that local checkout as the target. Review its code and `patchloop.target.json` first: PatchLoop runs its target manifest commands locally. The target must have a committed Git baseline. Commit or stash work you want included; PatchLoop creates an isolated worktree from the committed `HEAD`, not from uncommitted files. These CLI logins happen locally. Do not paste provider passwords, tokens, pairing codes, or auth files into the website, repository, video, or Render settings.
 
-### Pair the local runner to a Google account
+### Pair the local runner and register the target
 
 1. Open [https://patchloop-web.onrender.com](https://patchloop-web.onrender.com) and sign in with Google.
-2. Choose **Connect local runner** and copy the one-time command displayed by the site.
-3. In the local `kane-cli` checkout, run that command. It has this form; use a fresh pairing code copied from your signed-in page:
+2. Choose **Connect local runner**. Keep the one-time command displayed by the site private; it expires after ten minutes and works once.
+3. In PowerShell, set the target path and check it **before starting the worker**. Keep the target path and runner checkout separate:
 
    ```powershell
-   npm run worker -- --url https://patchloop-web.onrender.com --pair-code <FRESH_ONE_TIME_CODE>
+   cd $HOME\kane-cli
+   $target = Join-Path $HOME 'patchloop-full-showcase'
+   Test-Path (Join-Path $target 'patchloop.target.json')
+   $env:PATCHLOOP_TARGET_REPO = (Resolve-Path $target).Path
    ```
 
-4. Leave that terminal open. Confirm the site reports the runner connected.
-5. Create a task and an acceptance objective in the site. The task says what code behavior to change; the objective states the browser-visible outcome that will decide pass or fail.
-   To use the showcase target, clone `https://github.com/demonchant/patchloop-full-showcase.git`, review its source and `patchloop.target.json`, then set `$env:PATCHLOOP_TARGET_REPO = 'C:\path\to\patchloop-full-showcase'` in the worker terminal before starting it. Select **PatchLoop Full Showcase** in the picker. It intentionally contains a restore regression; register only repositories you trust because their manifest commands run locally.
-6. Watch the task move from queued to running and inspect its attempt timeline, evidence, and final state. A Kane failure remains a failure/review state; a timeout or launch problem is inconclusive/setup error, never a pass.
-7. After two consecutive failures of the same objective, inspect the recorded evidence and explicitly request a Codex repair if appropriate. Review the resulting diff. Start a fresh Kane verification of the unchanged objective before calling it verified.
+   `Test-Path` should return `True`. For a different app, replace the showcase folder with that app's local checkout path.
+
+4. Run the first-time pairing command copied from PatchLoop, in this same terminal:
+
+   ```powershell
+   npm run worker -- --url https://patchloop-web.onrender.com --pair-code <ONE_TIME_CODE_FROM_PATCHLOOP>
+   ```
+
+   The worker saves a revocable local token under the ignored `.patchloop/remote-worker/` folder. It should print the number of ready repository targets; with the bundled target and showcase configured, expect **2 repository targets**. If the count is 1, stop and check the target path and manifest before creating a task.
+
+5. Leave the worker terminal open. Confirm the website says the runner is connected, refresh the page, and choose **PatchLoop Full Showcase** in **Target repository**. Pairing and target registration are separate: a connected runner does not mean the showcase path was registered.
+6. Create the requested code change and browser objective. The task describes what the agent should change. The acceptance objective must state the observable browser behavior Kane will check. For the showcase, copy the task and fixed objective from its README.
+7. Submit the task, monitor the timeline, then open **Details** to inspect the fixed objective hash, Kane evidence, final event, exit code, and diff. A setup error means the runner or target configuration needs attention; it is not a Kane failure and should not be sent to Codex.
+8. After two consecutive failures of the same objective, inspect the evidence and explicitly request a Codex repair if appropriate. Review the actual worktree diff, then run the unchanged objective with Kane again. Claim a successful repair only when a real diff exists and the final same-objective Kane run passes with a successful process exit.
+
+For future worker starts, set `PATCHLOOP_TARGET_REPO` again in each new terminal, then omit the already-used pairing code:
+
+```powershell
+cd $HOME\kane-cli
+$target = Join-Path $HOME 'patchloop-full-showcase'
+$env:PATCHLOOP_TARGET_REPO = (Resolve-Path $target).Path
+npm run worker -- --url https://patchloop-web.onrender.com
+```
+
+To disconnect and revoke this worker pairing, run `npm run worker -- --url https://patchloop-web.onrender.com --disconnect` from the PatchLoop checkout. If a target is absent, restart the worker after correcting the path or manifest. Existing run records keep their original target and objective; replay only after the worker reports the intended target.
 
 Pairing codes expire after 10 minutes and can be used once. Never publish a code in a README, screenshot, issue, or commit. The worker saves a revocable local token under `.patchloop/remote-worker/`, which is ignored by Git. After first pairing, restart it with:
 
@@ -92,32 +117,31 @@ The supplied October event materials call for a public/invited GitHub repository
 
 This repository's history predates the event build window described in the supplied materials. Do not claim it was built during the event or that it meets that timing requirement. Ask the organizer whether this history is eligible before submitting. The private event pass, personal preparation packet, and personal build guides are intentionally not part of this repository.
 
-## Three-minute demo script
+## Screen recording and narration
 
-Prepare the showcase run before recording. The showcase's first Kane result should fail on the restored completion state; replay the unchanged objective, inspect the repeated failure, approve a Codex repair, review the real diff, and rerun that same objective. Show only result IDs and values from that actual session. The current smoke check confirms the seeded defect but is not a Kane result or a repair. Do not show credentials, pairing codes, provider accounts, unrelated browser tabs, private paths, or raw CLI auth data. If the live loop is not ready, record setup and label the repair as the expected workflow.
+The supplied recording shows target selection, two setup failures caused by a missing target path, a later Kane run that passed, and no worktree diff. It documents configuration recovery and the observed Kane pass; it does not document a Codex repair of the seeded showcase defect. The narration must not describe this as a completed code repair.
 
 | Time | What to show | Voiceover |
 |---|---|---|
-| 0:00–0:20 | Open the picker and select PatchLoop Full Showcase. State whether the run is local or hosted. | “PatchLoop lets me choose the local app to verify. The paired runner reports repository names and requirements while keeping its filesystem paths local.” |
-| 0:20–0:45 | Show the repair request, fixed objective, and objective hash before execution. | “This sample app has an intentional restore regression. The objective checks that the task returns to Active with its title and completed state preserved.” |
-| 0:45–1:10 | Show the first actual Kane failure and replay the exact objective. | “Kane found that restore cleared completion. I replayed the same objective, and the saved hash confirms that the acceptance check did not change.” |
-| 1:10–1:40 | Show repeated failure evidence and human approval to send it to Codex. | “After reviewing the repeated failure, I explicitly ask Codex to repair the isolated worktree. The selected checkout remains the committed baseline.” |
-| 1:40–2:10 | Review the actual diff and rerun the saved Kane objective. | “I review Codex's diff, then run the original objective again. PatchLoop verifies only from Kane's passing final event and successful process exit. These IDs and results are from this session.” |
-| 2:10–2:35 | Show the picker and API tests, then the verification record. | “The automated suite covers repository selection and target validation. It does not claim to run Kane or Codex; these live run records are separate evidence.” |
-| 2:35–3:00 | Show the public source repo, separate showcase repo, and target setup guide. | “The source and sample target are published separately. The target contract explains setup, and the paired worker uses the user's local Kane and Codex sign-ins.” |
+| 0:00-0:25 | Workbench and showcase restore requirement. | Explain that an archived completed task should restore with its title and checked state, and why a diff alone is not browser proof. |
+| 0:25-0:50 | Select the showcase target and show the fixed objective. | Explain the two local clones: PatchLoop's runner and the separate app repository being tested. |
+| 0:50-1:12 | Show the actual missing-target setup error. | Explain that the worker could not find the target because `PATCHLOOP_TARGET_REPO` was missing. |
+| 1:12-1:30 | Show the target configuration steps. | Explain setting the variable in the worker terminal, restarting it, and confirming both repositories are registered. |
+| 1:30-1:50 | Show Kane starting the browser run. | Explain that PatchLoop hashes and preserves the same acceptance objective. |
+| 1:50-2:20 | Show Kane's passing final event and the no-diff field. | State the observed result code and exit status; make clear that no Codex diff is shown. |
+| 2:20-2:23 | Show the setup guide. | Point viewers to the public source and target repositories and complete setup instructions. |
 
-This is a narration plan, not evidence that the showcase loop already passed. If a real Codex diff and same-objective Kane pass do not exist, replace the repair narration with a clear statement that the video shows setup and the intended workflow.
-
-Before recording, replace the generic run reference on screen with the actual run ID and result from the session being demonstrated. Keep claims aligned with what that run proves. Add the finished video URL to the organizer's form only after the recording exists and is playable.
+Do not show credentials, pairing codes, account details, unrelated browser tabs, or raw CLI auth data. Add the video URL to the organizer's form only after the recording exists, plays correctly, and its claims match the run record.
 
 ## Recorded verification evidence
 
-The committed [verification record](verification.md) reports the following past results from the local bundled application; these are not hosted-worker results:
+The committed [verification record](verification.md) reports the automated and earlier local results below. The screen recording separately shows one hosted worker run and its limitations:
 
 - `npm.cmd run check` passed.
 - `npm.cmd test` passed (11 tests) on October 10, 2026, including a showcase manifest launch/health test with a local test CLI stub (not Kane evidence).
 - Docker Playwright passed (11 tests) on October 10, 2026, including picker selection and stale-target rejection.
 - The showcase HTTP smoke check reproduced the intentional `completed: false` restore regression; it did not run Kane or Codex.
+- The supplied hosted recording shows two target setup failures followed by Kane's passing result (code `100`, `success.complete`, exit `0`). Its run details show no code diff, so it does not demonstrate a Codex repair.
 - Kane run `db0ac6a2-2929-442f-a383-8e20d153ee28` passed the archive/restore objective with result code `100` (`success.complete`) and process exit `0`.
 - Earlier attempts `87ec7a34-99f2-4625-b63f-621de1d078b3` (failed) and `704c51dc-3e5e-490a-a049-0b881ad4a1a2` (timed out/inconclusive) remain distinct from that passing run.
 
