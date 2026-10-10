@@ -1,4 +1,4 @@
-# Submission draft and three-minute video script
+# Submission draft and recording notes
 
 **Status:** draft. This is copy and a recording plan, not a submitted entry or a recorded video. Confirm the current event rules, eligibility, repo timing, and form with the organizer before using it. The app predates the event build window described in the supplied materials, so do not claim it was built during the event or eligible without organizer confirmation.
 
@@ -20,17 +20,18 @@ Next, select the target and submit the change request with its fixed browser obj
 
 The PatchLoop source and showcase target are published separately. The README and target guide explain cloning both repositories, local setup, pairing, target selection, and recovery from setup errors.
 
-| Time | Screen action | Voiceover |
-|---|---|---|
-| 0:00–0:15 | Open PatchLoop and show the repository picker. Select PatchLoop Full Showcase. | “PatchLoop lets me choose the local app that will be tested. The paired runner reports available repositories without sending their local paths to the site.” |
-| 0:15–0:35 | Load the showcase repair request and fixed objective. Show its hash. | “This sample app contains an intentional restore regression. The acceptance objective is saved before verification, and the same objective will be used after the repair.” |
-| 0:35–1:00 | Show the first actual Kane failure after restore, then replay the unchanged objective. | “Kane found that the task returned to Active without its completed state. I replayed the same objective, and PatchLoop records both attempts against the same target and objective hash.” |
-| 1:00–1:35 | Review the repeated failure evidence and click the human approval control for Codex. | “After inspecting the repeated failure, I explicitly ask Codex to repair it in the isolated worktree. The existing checkout remains the committed baseline.” |
-| 1:35–2:00 | Inspect the actual Codex diff and rerun the same Kane objective. | “I review the code diff, then rerun the saved objective. PatchLoop can verify only from Kane's real passing final event and a successful process exit. Here are the run ID, objective hash, exit code, and final result.” |
-| 2:00–2:25 | Show the picker/API tests and current test report. | “The repository picker and target validation have UI and API coverage. These automated checks do not invoke Kane or Codex; the live records on screen are separate evidence.” |
-| 2:25–3:00 | Show the target contract, hosted runner setup, and verification record. | “The target contract documents the app requirements and manifest. The hosted site queues work while the paired worker uses the user's local Kane and Codex sign-ins. The repository records the scope of automated and live verification.” |
+### What appears in the edited recording
 
-**Recording gate:** this script describes the intended showcase demonstration, not completed evidence. If the real Kane failure, Codex diff, and same-objective Kane pass are unavailable, label the recording as setup and expected workflow. Do not narrate the repair as completed.
+| Time | Screen action | Narration focus |
+|---|---|---|
+| 0:00-0:24 | PatchLoop workbench and restore requirement. | Explain the completed-task restore bug and why browser evidence matters. |
+| 0:24-0:48 | Showcase target selection, request, and fixed objective. | Explain that the runner and target app are separate local clones. |
+| 0:48-1:10 | Recorded missing-target setup error with the setup correction overlay. | Explain setting `PATCHLOOP_TARGET_REPO` in the worker terminal and restarting the worker. |
+| 1:10-1:31 | Task queued and Kane browser run starts. | Explain objective locking and what the browser run checks. |
+| 1:31-2:08 | Kane run details and recorded outcome. | State the pass (result code 100, exit 0) and that no code diff was recorded. |
+| 2:08-2:23 | Custom end card with source repo, showcase repo, and setup guide. | Point viewers to both repositories and the complete target setup instructions. |
+
+The recording documents configuration recovery and a Kane pass. It does not document Codex repairing the showcase defect; do not narrate it as a completed code repair.
 
 ## Recording checklist
 
