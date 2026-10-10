@@ -1,0 +1,9 @@
+﻿{
+  "name": "PatchLoop Full Showcase",
+  "requirements": "Node.js 20+, Git, and a committed checkout. No app dependencies are required.",
+  "readyPath": "/api/health",
+  "start": {
+    "command": "node",
+    "args": ["server.mjs"]
+  }
+}

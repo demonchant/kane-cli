@@ -6,11 +6,13 @@ This file records commands and browser verification performed against the bundle
 
 | Command | Result | Scope / limitation |
 |---|---|---|
-| `npm.cmd run check` | Passed | Syntax checks for server, engine, store, browser script, and demo server. |
-| `npm.cmd test` | Passed (7 tests) | Objective/parser/redaction/store behavior, signed-session validation, and per-user run ownership. |
+| `npm.cmd run check` | Passed (2026-10-10) | Syntax checks for server, engine, store, browser script, and demo server. |
+| `npm.cmd test` | Passed (10 tests; 2026-10-10) | Objective/parser/redaction/store behavior, signed-session validation, target catalog privacy, manifest readiness, and immutable target selection. |
 | Focused Playwright archive/restore check | Passed | Repaired app worktree with isolated task data; checked Active/Archived visibility and retained completion state. |
 | `docker compose --profile test run --build --rm -e TEST_OUTPUT_DIR=/tmp/patchloop-results -e TEST_HTML_REPORT=/tmp/patchloop-report e2e` | Passed (8 tests; rerun on 2026-10-09) | Docker Playwright suite checks the setup guide, supplied page backgrounds, bundled demo archive/restore workflow, and local API. Test containers had no Kane or Codex credentials. The runtime image installs locked production dependencies. |
-| Kane verification | Passed on run `db0ac6a2-2929-442f-a383-8e20d153ee28` | Same acceptance objective and hash as run `87ec7a34-99f2-4625-b63f-621de1d078b3`; baseline commit `4d0adbffa80f63cb52f5b86ce4a6736837e610d0`; Kane CLI `0.8.21`; exit code `0`; result code `100` (`success.complete`); timeout `900` seconds. |
+| `docker compose --profile test up --build --abort-on-container-exit --exit-code-from e2e e2e` | Passed (11 tests; 2026-10-10) | Includes hosted picker selection/submission, bundled target listing, stale-target rejection, setup UI, and bundled app/API checks. First launch exposed an unwritable host bind mount for Playwright output; the test service now uses a writable temporary filesystem. Test reports are discarded with the test container. No Kane/Codex credentials are mounted. |
+| Showcase target HTTP smoke check | Passed (2026-10-10) | The app became ready and task creation, completion, archive, and restore endpoints responded. The smoke check confirmed the intentional seeded defect: restore returns `completed: false`. This is app smoke evidence, not Kane/Codex repair evidence. |
+| Kane verification | Passed on `db0ac6a2-2929-442f-a383-8e20d153ee28`; historic bundled-demo evidence | Same acceptance objective and hash as run `87ec7a34-99f2-4625-b63f-621de1d078b3`; baseline commit `4d0adbffa80f63cb52f5b86ce4a6736837e610d0`; Kane CLI `0.8.21`; exit code `0`; result code `100` (`success.complete`); timeout `900` seconds. |
 
 ## Archive/restore evidence (2026-10-09)
 

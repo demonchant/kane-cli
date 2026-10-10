@@ -87,7 +87,9 @@ if (!preflight.kane.installed || !preflight.kane.authenticated || !preflight.age
   process.stderr.write('Runner setup is incomplete. Install Kane CLI and Codex CLI, sign into Kane with `kane-cli login --oauth`, and sign into Codex with `codex login`.\n');
   process.exit(2);
 }
-process.stdout.write(`Local tools ready. Watching ${siteUrl.origin} for your private tasks. Press Ctrl+C to stop.\n`);
+const targets = await engine.listTargets();
+await request('/api/worker/targets', { method: 'POST', body: { targets } });
+process.stdout.write(`Local tools ready with ${targets.filter((target) => target.ready).length} repository target(s). Watching ${siteUrl.origin} for your private tasks. Press Ctrl+C to stop.\n`);
 
 let stopping = false;
 process.on('SIGINT', () => { stopping = true; });

@@ -9,6 +9,7 @@ let lastRuns = [];
 let activeSession = null;
 let pairingExpiresAt = null;
 let pairingTimer = null;
+let availableTargets = [];
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const humanState = (state) => ({ needs_review: 'Review failure', setup_error: 'Setup error', agent_error: 'Agent error', inconclusive: 'Inconclusive', unresolved: 'Still failing', verifying: 'Kane running', repairing: 'Agent working', queued: 'Queued', verified: 'Verified' })[state] ?? state;
@@ -97,6 +98,26 @@ function renderPreflight(result) {
   }).join('');
 }
 
+async function loadTargets() {
+  const select = $('#target-repo');
+  try {
+    const { targets = [] } = await api('/api/targets');
+    availableTargets = targets.filter((target) => target.ready);
+    const current = select.value;
+    select.innerHTML = availableTargets.length
+      ? availableTargets.map((target) => '<option value="' + escapeHtml(target.id) + '">' + escapeHtml(target.name) + '</option>').join('')
+      : '<option value="">Connect a runner to load repositories</option>';
+    if (availableTargets.some((target) => target.id === current)) select.value = current;
+    select.disabled = !availableTargets.length;
+    const selected = availableTargets.find((target) => target.id === select.value);
+    $('#target-requirements').textContent = selected?.requirements ?? (availableTargets.length ? 'This repository runs in a disposable worktree on your paired computer.' : 'Pair your local runner first; it will report the repositories available on that computer.');
+  } catch { select.innerHTML = '<option value="">Repository list unavailable</option>'; select.disabled = true; }
+}
+$('#target-repo').addEventListener('change', () => {
+  const selected = availableTargets.find((target) => target.id === $('#target-repo').value);
+  $('#target-requirements').textContent = selected?.requirements ?? 'This repository runs in a disposable worktree on your paired computer.';
+});
+
 async function loadPreflight() {
   if (activeSession?.mode === 'google' && !activeSession.executionEnabled) {
     $('#preflight').innerHTML = '<div class="preflight-row"><span class="preflight-name">Hosted runner</span><span class="preflight-value bad">Not configured</span></div>';
@@ -157,7 +178,7 @@ objectiveInput.addEventListener('input', counts);
 $('#refresh').addEventListener('click', () => { void loadRuns(); void loadPreflight(); });
 $('#check-setup').addEventListener('click', () => void loadPreflight());
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && activeSession?.mode === 'google') void loadPreflight();
+  if (!document.hidden && activeSession?.mode === 'google') { void loadPreflight(); void loadTargets(); }
 });
 
 async function createPairingCode(button) {
@@ -191,7 +212,7 @@ form.addEventListener('submit', async (event) => {
   button.disabled = true;
   notice.hidden = true;
   try {
-    const { run } = await api('/api/runs', { method: 'POST', body: JSON.stringify({ task: taskInput.value, objective: objectiveInput.value }) });
+    const { run } = await api('/api/runs', { method: 'POST', body: JSON.stringify({ task: taskInput.value, objective: objectiveInput.value, targetId: $('#target-repo').value }) });
     showNotice(activeSession?.mode === 'google' ? `Task ${run.id.slice(0, 8)} is queued for your local runner.` : `Task ${run.id.slice(0, 8)} created. Kane is starting a real browser run.`);
     taskInput.value = '';
     objectiveInput.value = '';
@@ -275,8 +296,8 @@ async function initialize() {
         $('.privacy-note span:last-child').textContent = 'Task execution and provider sign-ins stay on your computer. Only run history and review evidence sync to your private session.';
       }
     }
-    await Promise.all([loadPreflight(), loadRuns()]);
-    if (activeSession.mode === 'google') setInterval(() => { void loadRuns(); void loadPreflight(); }, 3000);
+    await Promise.all([loadPreflight(), loadTargets(), loadRuns()]);
+    if (activeSession.mode === 'google') setInterval(() => { void loadRuns(); void loadPreflight(); void loadTargets(); }, 3000);
     if (activeSession.mode === 'local') setInterval(() => { void loadRuns(); }, 1800);
   } catch (error) {
     document.body.dataset.screen = 'signin';

@@ -85,6 +85,36 @@ test('loads a real bundled task prompt without creating fabricated run records',
   await expect(page.getByText('No runs yet')).toBeVisible();
 });
 
+test('shows reported repository choices and submits the selected target id', async ({ page }) => {
+  const json = (body) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  await page.route('**/api/session', (route) => route.fulfill(json({ mode: 'google', authenticated: true, executionEnabled: true, user: { name: 'Demo User' } })));
+  await page.route('**/api/preflight', (route) => route.fulfill(json({ hosted: true, executionEnabled: true, worker: { connected: true, busy: false } })));
+  await page.route('**/api/targets', (route) => route.fulfill(json({ targets: [
+    { id: 'bundled-demo', name: 'Bundled Goodwork demo', ready: true },
+    { id: 'configured', name: 'PatchLoop Full Showcase', ready: true, requirements: 'Node.js 20+ and committed Git checkout.' },
+  ] })));
+  await page.route('**/api/runs', async (route) => {
+    if (route.request().method() === 'POST') {
+      const payload = route.request().postDataJSON();
+      expect(payload.targetId).toBe('configured');
+      await route.fulfill(json({ run: { id: 'demo-run-id', ...payload } }));
+      return;
+    }
+    await route.fulfill(json({ runs: [] }));
+  });
+
+  await page.goto('/');
+  const picker = page.getByLabel('Target repository');
+  await expect(picker).toHaveValue('bundled-demo');
+  await expect(picker.locator('option')).toHaveCount(2);
+  await picker.selectOption('configured');
+  await expect(page.locator('#target-requirements')).toHaveText('Node.js 20+ and committed Git checkout.');
+  await page.getByLabel('What should the coding agent change?').fill('Keep a completed task checked after restore.');
+  await page.getByLabel(/Fixed Kane acceptance objective/).fill('Create, complete, archive, and restore a task, then confirm its title and completed checkbox are preserved.');
+  await page.getByRole('button', { name: 'Run Kane verification' }).click();
+  await expect(page.getByText(/is queued for your local runner/)).toBeVisible();
+});
+
 test('keeps all primary controls keyboard reachable and usable on a narrow viewport', async ({ page }) => {
   test.setTimeout(45_000);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -108,6 +138,19 @@ test('exposes health and refuses incomplete task submissions without starting to
   expect(await invalid.json()).toHaveProperty('error');
   const runs = await request.get('/api/runs');
   expect((await runs.json()).runs).toEqual([]);
+});
+
+test('publishes the bundled target and rejects an unavailable repository selection', async ({ request }) => {
+  const catalog = await request.get('/api/targets');
+  expect(catalog.ok()).toBeTruthy();
+  expect((await catalog.json()).targets).toContainEqual(expect.objectContaining({ id: 'bundled-demo', ready: true }));
+  const rejected = await request.post('/api/runs', { data: {
+    task: 'Verify an unavailable repository is rejected',
+    objective: 'Confirm unavailable repository targets cannot create a run.',
+    targetId: 'stale-target',
+  } });
+  expect(rejected.status()).toBe(400);
+  expect(await rejected.json()).toHaveProperty('error', 'Choose an available repository from the target picker.');
 });
 
 test('adds safe response headers and blocks cross-origin state changes', async ({ request }) => {

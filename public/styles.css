@@ -8,3 +8,5 @@ body[data-screen="signin"]::before{background-image:linear-gradient(90deg,#10111
 body[data-screen="workbench"]::before{background-image:linear-gradient(180deg,#101112d9 0%,#101112bb 48%,#101112eb 100%),url("/images/workbench.png")}
 .shell{position:relative;z-index:1}
 .detail-dialog{background-image:linear-gradient(180deg,#171a19e8,#171a19f5),url("/images/evidence-dialogue.png");background-position:center;background-size:cover}
+
+#target-repo{width:100%;border:1px solid #343a36;border-radius:6px;background:#141716;color:#e2e6e3;padding:11px;font:11px var(--mono)}#target-repo:focus{outline:1px solid var(--lime);border-color:var(--lime)}.target-help{margin-top:-7px}

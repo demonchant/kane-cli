@@ -11,7 +11,7 @@ npm start
 
 Open `http://127.0.0.1:4173`. The first preflight prepares a private bundled target repository under `.patchloop/`. Run history, worktrees, and demo data stay there and are excluded from Git. Keep this directory if you need those local records.
 
-To use another local target, set `PATCHLOOP_TARGET_REPO` to a clean, committed Git repository root before `npm start`. The target must have a `server.mjs`, `/api/health`, and honor `PATCHLOOP_PORT` and `PATCHLOOP_DATA_DIR`. PatchLoop does not execute arbitrary shell text from the browser.
+To use another local target, set `PATCHLOOP_TARGET_REPO` to a committed Git repository root before `npm start`, then choose it in the repository picker. The app needs a `server.mjs` or `patchloop.target.json`, a readiness endpoint, and support for `PATCHLOOP_HOST`, `PATCHLOOP_PORT`, and `PATCHLOOP_DATA_DIR`. Manifest commands run locally in the disposable worktree. Register only repositories you trust; see the [target repository contract](target-repositories.md).
 
 ## Hosted link with a local runner
 
@@ -52,7 +52,7 @@ Save the environment and deploy/redeploy. Check `https://YOUR-SERVICE.onrender.c
 
 ### 4. Pair each user's local runner
 
-Each user performs these steps on the computer where Kane and Codex should run. Do not put CLI auth files or credentials in the repository or Render environment.
+Each user performs these steps on the computer where Kane and Codex should run. Do not put CLI auth files or credentials in the repository or Render environment. To register an additional app, clone it on that computer, review its `patchloop.target.json`, and set `PATCHLOOP_TARGET_REPO` in the worker terminal before starting the worker. The site lists the worker's ready repositories in the picker; restart the worker after changing the configured repository. See the [showcase target setup](target-repositories.md#showcase-target) for a sample.
 
 ```powershell
 git clone https://github.com/demonchant/kane-cli.git

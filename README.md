@@ -81,7 +81,7 @@ docker compose up --build -d patchloop
 
 Then open `http://127.0.0.1:4173`. To stop it, run `docker compose down`. State is stored in the local Docker volume `patchloop-state`.
 
-The Docker browser checks use a clean, separate app container and retain the actual report under the ignored `artifacts/playwright/` directory:
+The Docker browser checks use clean, separate app containers. Test reports are written to a temporary container filesystem and disappear when the test container exits:
 
 ```powershell
 docker compose --profile test build patchloop-test e2e
@@ -93,14 +93,21 @@ The Docker UI checks exercise the real PatchLoop app and API. They do not invoke
 
 ## Use a different target repo
 
-The default is the bundled demo. To use another local Git repository, start PatchLoop with `PATCHLOOP_TARGET_REPO` pointing to its repository root. It must have a commit, a Node `server.mjs` entry point, and `/api/health`; PatchLoop starts that file in the worktree on a fresh port. The app must honor `PATCHLOOP_PORT` and `PATCHLOOP_DATA_DIR` for each isolated run. Uncommitted files are not copied into the worktree: commit or stash the intended baseline first.
+Choose a repository in the **Target repository** picker before starting a task. The bundled Goodwork demo is always listed. To add another repository, set `PATCHLOOP_TARGET_REPO` on the computer running PatchLoop or its paired worker; the worker reports its ready targets to the signed-in page. A target needs a committed Git baseline and either a `server.mjs` entry point or a root `patchloop.target.json` manifest. Its app must honor `PATCHLOOP_HOST`, `PATCHLOOP_PORT`, and `PATCHLOOP_DATA_DIR`. Uncommitted files are not copied into the worktree: commit or stash the intended baseline first.
 
 ```powershell
 $env:PATCHLOOP_TARGET_REPO = 'C:\path\to\your\app'
 npm start
 ```
 
-PatchLoop binds to loopback by default. Do not expose the agent-execution endpoint to a public network. Run history, local worktrees, and demo data live under `.patchloop/` and are excluded from Git.
+For the hosted site and paired local worker:
+
+```powershell
+$env:PATCHLOOP_TARGET_REPO = 'C:\path\to\your\app'
+npm run worker -- --url https://patchloop-web.onrender.com
+```
+
+Manifest install and start commands execute locally in the target's disposable worktree, so register only repositories you trust. See the [target repository contract and showcase setup](docs/target-repositories.md) for supported fields, local and hosted setup, and the intentional repair challenge. PatchLoop binds to loopback by default. Do not expose the agent-execution endpoint to a public network. Run history, local worktrees, and demo data live under `.patchloop/` and are excluded from Git.
 
 ## Demo preset
 
@@ -141,7 +148,7 @@ More detail: [Architecture and threat boundaries](docs/architecture.md), [claim-
 ## Reviewer fast path
 
 1. Follow [local setup](#run-locally) and run `npm run check` and `npm test`.
-2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It exercises the real bundled app/API, including archive and restore.
+2. Run the Docker browser suite with the commands in [verification](docs/verification.md). It covers the repository picker and API as well as the bundled app's archive and restore flow.
 3. Read the [operations/demo guide](docs/demo-and-operations.md) and [submission/video draft](docs/submission.md). The Kane run ID, objective hash, result, and limits are recorded in the verification record.
 
 **Current release state:** the maintainer reports the public Render site and Google sign-in are working at https://patchloop-web.onrender.com. The public repository includes the hosted queue and paired local runner. Local operation and hosted pairing are separate paths; the hosted runner must stay online to process jobs. Render hosting incurs project-owner compute/storage costs, while each user supplies their own Kane credits and Codex/ChatGPT sign-in. The supplied competition brief required project creation during the event window; this repository predates that window, so eligibility must be confirmed with the organizer and is not claimed here.

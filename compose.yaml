@@ -37,8 +37,7 @@ services:
       - ALL
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=128m,uid=1000,gid=1000
-    volumes:
-      - ./artifacts/playwright:/artifacts
+      - /artifacts:rw,noexec,nosuid,size=256m,uid=1000,gid=1000
     environment:
       BASE_URL: http://patchloop-test:4173
       DEMO_URL: http://demo-test:4180

@@ -45,6 +45,9 @@
           <section class="panel compose-panel" aria-labelledby="new-run-title">
             <div class="panel-heading"><div><div class="eyebrow small">NEW VERIFICATION</div><h2 id="new-run-title">Describe the change</h2></div><span class="live-label"><i></i> READY</span></div>
             <form id="run-form">
+              <label for="target-repo">Target repository</label>
+              <select id="target-repo" name="targetRepo" required><option value="">Loading available repositories…</option></select>
+              <div class="field-foot target-help"><span id="target-requirements">Choose the bundled demo or a repository registered by your local runner.</span></div>
               <label for="task">What should the coding agent change?</label>
               <textarea id="task" name="task" rows="4" minlength="12" maxlength="1600" required placeholder="Example: Add archive and restore actions for completed tasks. Keep archived tasks out of the active list and preserve their completion state when restored."></textarea>
               <div class="field-foot"><span>Kane checks first; Codex gets two matching failures after your approval.</span><span id="task-count">0 / 1600</span></div>
