@@ -53,6 +53,7 @@ These CLI logins happen locally. Do not paste provider passwords, tokens, or aut
 
 4. Leave that terminal open. Confirm the site reports the runner connected.
 5. Create a task and an acceptance objective in the site. The task says what code behavior to change; the objective states the browser-visible outcome that will decide pass or fail.
+   To use the showcase target, clone `https://github.com/demonchant/patchloop-full-showcase.git`, review its source and `patchloop.target.json`, then set `$env:PATCHLOOP_TARGET_REPO = 'C:\path\to\patchloop-full-showcase'` in the worker terminal before starting it. Select **PatchLoop Full Showcase** in the picker. It intentionally contains a restore regression; register only repositories you trust because their manifest commands run locally.
 6. Watch the task move from queued to running and inspect its attempt timeline, evidence, and final state. A Kane failure remains a failure/review state; a timeout or launch problem is inconclusive/setup error, never a pass.
 7. After two consecutive failures of the same objective, inspect the recorded evidence and explicitly request a Codex repair if appropriate. Review the resulting diff. Start a fresh Kane verification of the unchanged objective before calling it verified.
 
@@ -81,6 +82,8 @@ npm start
 
 Open [http://127.0.0.1:4173](http://127.0.0.1:4173). The bundled task app is prepared under `.patchloop/` on first use. Install and authenticate Kane/Codex using the setup above if you want real verification and repair. To preserve local run history and worktrees, do not delete `.patchloop/`.
 
+To use the showcase app locally, set `PATCHLOOP_TARGET_REPO` to its committed checkout before `npm start`, then choose it from the same picker.
+
 For Docker UI/API and browser checks, follow the commands and limitations in [verification](verification.md) and [deployment](deployment.md). Docker Playwright checks do not authenticate or run Kane/Codex; use the native or hosted worker path for those real integrations.
 
 ## Competition submission checklist
@@ -91,17 +94,19 @@ This repository's history predates the event build window described in the suppl
 
 ## Three-minute demo script
 
-Prepare the run before recording. Use the hosted flow only after a real task has completed through the paired worker and the hosted run page shows its actual result. A previous local Kane pass is useful local evidence but is not evidence of a hosted run. Do not show credentials, pairing codes, provider accounts, unrelated browser tabs, private paths, or raw CLI auth data. If a hosted run is not ready, record the local workflow and say clearly that the hosted path is deployed but its end-to-end run is still being verified.
+Prepare the showcase run before recording. The showcase's first Kane result should fail on the restored completion state; replay the unchanged objective, inspect the repeated failure, approve a Codex repair, review the real diff, and rerun that same objective. Show only result IDs and values from that actual session. The current smoke check confirms the seeded defect but is not a Kane result or a repair. Do not show credentials, pairing codes, provider accounts, unrelated browser tabs, private paths, or raw CLI auth data. If the live loop is not ready, record setup and label the repair as the expected workflow.
 
 | Time | What to show | Voiceover |
 |---|---|---|
-| 0:00–0:20 | Open PatchLoop and show task/workbench. State whether this recording uses hosted or local mode. | “Coding agents can make a change without proving that the browser flow works. PatchLoop ties a fixed acceptance objective to real Kane browser evidence and keeps any repair reviewable.” |
-| 0:20–0:45 | Show the task request and acceptance objective before execution; point to its hash. | “The task describes the requested change. The acceptance objective describes what the user must be able to do. PatchLoop stores its hash so repair cannot quietly weaken the check.” |
-| 0:45–1:10 | In hosted mode, show Google signed-in session and connected runner indicator, then switch to the already-running local worker terminal without exposing personal data. For local mode, show the workbench running at loopback. | “Google provides a private PatchLoop session. The paired worker runs Kane and Codex on the user's computer, where their CLI sign-ins and code stay.” |
-| 1:10–1:50 | Show the real archive/restore journey: completed task in Active, archive, Archived list, restore, then Active with completed check still set. | “This task is complete. Archive hides it from Active and puts it in Archived. Restore returns it to Active and preserves the completed checkmark.” |
-| 1:50–2:20 | Show the actual run record, run ID, objective hash, attempt timeline, final Kane result, and exit code. | “This is the recorded result from the real run. PatchLoop only reports verified when Kane's final event passes and the process exits successfully. Failed and timed-out attempts remain recorded with their actual states.” |
-| 2:20–2:40 | Show evidence/test summary and the diff review view if a real repair is available. Do not imply that the archive pass itself required repair. | “Playwright also covers the archive and restore postcondition. When a repeatable browser failure needs code repair, Codex edits an isolated worktree; a person reviews the diff, then Kane reruns the same objective.” |
-| 2:40–3:00 | Show the public repository README, deployment/operations guide, and verification record. | “The repository includes local setup, hosted runner setup, deployment details, and test evidence. The site is live at patchloop-web.onrender.com. Each runner user supplies their own Kane access and Codex sign-in; the project pays for hosting.” |
+| 0:00–0:20 | Open the picker and select PatchLoop Full Showcase. State whether the run is local or hosted. | “PatchLoop lets me choose the local app to verify. The paired runner reports repository names and requirements while keeping its filesystem paths local.” |
+| 0:20–0:45 | Show the repair request, fixed objective, and objective hash before execution. | “This sample app has an intentional restore regression. The objective checks that the task returns to Active with its title and completed state preserved.” |
+| 0:45–1:10 | Show the first actual Kane failure and replay the exact objective. | “Kane found that restore cleared completion. I replayed the same objective, and the saved hash confirms that the acceptance check did not change.” |
+| 1:10–1:40 | Show repeated failure evidence and human approval to send it to Codex. | “After reviewing the repeated failure, I explicitly ask Codex to repair the isolated worktree. The selected checkout remains the committed baseline.” |
+| 1:40–2:10 | Review the actual diff and rerun the saved Kane objective. | “I review Codex's diff, then run the original objective again. PatchLoop verifies only from Kane's passing final event and successful process exit. These IDs and results are from this session.” |
+| 2:10–2:35 | Show the picker and API tests, then the verification record. | “The automated suite covers repository selection and target validation. It does not claim to run Kane or Codex; these live run records are separate evidence.” |
+| 2:35–3:00 | Show the public source repo, separate showcase repo, and target setup guide. | “The source and sample target are published separately. The target contract explains setup, and the paired worker uses the user's local Kane and Codex sign-ins.” |
+
+This is a narration plan, not evidence that the showcase loop already passed. If a real Codex diff and same-objective Kane pass do not exist, replace the repair narration with a clear statement that the video shows setup and the intended workflow.
 
 Before recording, replace the generic run reference on screen with the actual run ID and result from the session being demonstrated. Keep claims aligned with what that run proves. Add the finished video URL to the organizer's form only after the recording exists and is playable.
 
@@ -110,8 +115,9 @@ Before recording, replace the generic run reference on screen with the actual ru
 The committed [verification record](verification.md) reports the following past results from the local bundled application; these are not hosted-worker results:
 
 - `npm.cmd run check` passed.
-- `npm.cmd test` passed (7 tests).
-- Docker Playwright passed (8 tests) on October 9, 2026.
+- `npm.cmd test` passed (10 tests) on October 10, 2026.
+- Docker Playwright passed (11 tests) on October 10, 2026, including picker selection and stale-target rejection.
+- The showcase HTTP smoke check reproduced the intentional `completed: false` restore regression; it did not run Kane or Codex.
 - Kane run `db0ac6a2-2929-442f-a383-8e20d153ee28` passed the archive/restore objective with result code `100` (`success.complete`) and process exit `0`.
 - Earlier attempts `87ec7a34-99f2-4625-b63f-621de1d078b3` (failed) and `704c51dc-3e5e-490a-a049-0b881ad4a1a2` (timed out/inconclusive) remain distinct from that passing run.
 
