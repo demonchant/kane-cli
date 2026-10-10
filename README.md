@@ -107,7 +107,7 @@ $env:PATCHLOOP_TARGET_REPO = 'C:\path\to\your\app'
 npm run worker -- --url https://patchloop-web.onrender.com
 ```
 
-Manifest install and start commands execute locally in the target's disposable worktree, so register only repositories you trust. See the [target repository contract and showcase setup](docs/target-repositories.md) for supported fields, local and hosted setup, and the intentional repair challenge. PatchLoop binds to loopback by default. Do not expose the agent-execution endpoint to a public network. Run history, local worktrees, and demo data live under `.patchloop/` and are excluded from Git.
+Manifest install and start commands execute locally in the target's disposable worktree, so register only repositories you trust. See the [target repository contract and showcase setup](docs/target-repositories.md) for supported fields, local and hosted setup, and the intentional repair challenge. The standalone [PatchLoop Full Showcase app](https://github.com/demonchant/patchloop-full-showcase) is available as a separate repository. PatchLoop binds to loopback by default. Do not expose the agent-execution endpoint to a public network. Run history, local worktrees, and demo data live under `.patchloop/` and are excluded from Git.
 
 ## Demo preset
 

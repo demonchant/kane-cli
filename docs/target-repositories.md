@@ -62,6 +62,6 @@ The worker reports a sanitized catalog when it starts. Keep it running, refresh 
 
 ## Showcase target
 
-[`examples/patchloop-full-showcase`](../examples/patchloop-full-showcase) is the standalone sample target published at `demonchant/patchloop-full-showcase`. Clone it to the worker computer, set `PATCHLOOP_TARGET_REPO` to that checkout, and select **PatchLoop Full Showcase**. Its initial commit intentionally clears completion when a task is restored. The expected live demonstration is two failures of the fixed Kane objective, a human-approved Codex repair, diff review, and a pass of the unchanged objective.
+[`examples/patchloop-full-showcase`](../examples/patchloop-full-showcase) is the standalone sample target published at [demonchant/patchloop-full-showcase](https://github.com/demonchant/patchloop-full-showcase). Clone it to the worker computer, set `PATCHLOOP_TARGET_REPO` to that checkout, and select **PatchLoop Full Showcase**. Its initial commit intentionally clears completion when a task is restored. The expected live demonstration is two failures of the fixed Kane objective, a human-approved Codex repair, diff review, and a pass of the unchanged objective.
 
 The showcase sequence has not been run as part of this change. Do not describe a Kane/Codex repair as passed until a real run record contains initial failure evidence and a successful same-objective Kane final event after the repair.
