@@ -7,6 +7,8 @@ const notice = $('#notice');
 const detailDialog = $('#detail-dialog');
 let lastRuns = [];
 let activeSession = null;
+let pairingExpiresAt = null;
+let pairingTimer = null;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const humanState = (state) => ({ needs_review: 'Review failure', setup_error: 'Setup error', agent_error: 'Agent error', inconclusive: 'Inconclusive', unresolved: 'Still failing', verifying: 'Kane running', repairing: 'Agent working', queued: 'Queued', verified: 'Verified' })[state] ?? state;
@@ -28,11 +30,59 @@ function showNotice(message, error = false) {
   notice.textContent = message;
 }
 
+function updatePairingControls(worker = {}) {
+  const connectButton = $('#pair-worker');
+  const refreshButton = $('#refresh-pair-code');
+  const expiry = $('#pair-expiry');
+  const command = $('#pair-command');
+  const copyButton = $('#copy-pair-command');
+  if (worker.connected) {
+    if (pairingTimer) clearInterval(pairingTimer);
+    pairingTimer = null;
+    pairingExpiresAt = null;
+    command.textContent = '';
+    command.hidden = true;
+    copyButton.hidden = true;
+    expiry.hidden = true;
+    connectButton.hidden = true;
+    refreshButton.hidden = true;
+    $('#worker-state').textContent = worker.busy ? 'Your local runner is connected and processing a task.' : 'Your local runner is connected. You can give PatchLoop a task now; this page updates automatically.';
+    return;
+  }
+  if (!pairingExpiresAt) {
+    expiry.hidden = true;
+    connectButton.hidden = false;
+    connectButton.textContent = 'Connect local runner';
+    refreshButton.hidden = true;
+    $('#worker-state').textContent = 'Start the local runner on your computer to process queued tasks.';
+    return;
+  }
+  const secondsLeft = Math.max(0, Math.ceil((pairingExpiresAt - Date.now()) / 1000));
+  if (secondsLeft === 0) {
+    if (pairingTimer) clearInterval(pairingTimer);
+    pairingTimer = null;
+    pairingExpiresAt = null;
+    command.textContent = '';
+    command.hidden = true;
+    copyButton.hidden = true;
+    expiry.textContent = 'This pairing code expired. Generate a fresh code to try again.';
+    expiry.hidden = false;
+    connectButton.hidden = true;
+    refreshButton.hidden = false;
+    return;
+  }
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = String(secondsLeft % 60).padStart(2, '0');
+  expiry.textContent = `Pairing code expires in ${minutes}:${seconds}. This page will show when the runner connects.`;
+  expiry.hidden = false;
+  connectButton.hidden = true;
+  refreshButton.hidden = true;
+}
 function renderPreflight(result) {
   if (result.hosted) {
     const worker = result.worker ?? {};
     $('#preflight').innerHTML = `<div class="preflight-row"><span class="preflight-name">Private local runner</span><span class="preflight-value ${worker.connected ? 'ok' : 'bad'}">${worker.connected ? (worker.busy ? 'Working' : 'Connected') : 'Offline'}</span></div><div class="preflight-row"><span class="preflight-name">Provider sign-ins</span><span class="preflight-value">Stay on your computer</span></div>`;
-    $('#worker-state').textContent = worker.connected ? (worker.busy ? 'Your local runner is processing a task.' : 'Your local runner is connected and waiting for tasks.') : 'Start the local runner on your computer to process queued tasks.';
+    updatePairingControls(worker);
     return;
   }
   const rows = [
@@ -106,20 +156,29 @@ taskInput.addEventListener('input', counts);
 objectiveInput.addEventListener('input', counts);
 $('#refresh').addEventListener('click', () => { void loadRuns(); void loadPreflight(); });
 $('#check-setup').addEventListener('click', () => void loadPreflight());
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && activeSession?.mode === 'google') void loadPreflight();
+});
 
-$('#pair-worker').addEventListener('click', async () => {
-  const button = $('#pair-worker');
+async function createPairingCode(button) {
   button.disabled = true;
   try {
-    const { code } = await api('/api/worker/pair', { method: 'POST', body: '{}' });
+    const { code, expiresInSeconds = 600 } = await api('/api/worker/pair', { method: 'POST', body: '{}' });
     const command = `npm run worker -- --url ${location.origin} --pair-code ${code}`;
-    $('#pair-command').textContent = `${command}\n\nThe code works once and expires in 10 minutes. After pairing, start it with: npm run worker -- --url ${location.origin}`;
+    pairingExpiresAt = Date.now() + expiresInSeconds * 1000;
+    $('#pair-command').textContent = `${command}\n\nThis code works once. After pairing, start the runner with: npm run worker -- --url ${location.origin}`;
     $('#pair-command').hidden = false;
     $('#copy-pair-command').hidden = false;
+    $('#refresh-pair-code').hidden = true;
+    updatePairingControls();
+    if (pairingTimer) clearInterval(pairingTimer);
+    pairingTimer = setInterval(() => updatePairingControls(), 1000);
     showNotice('Pairing code created. Run the first command on the computer with Kane and Codex installed.');
   } catch (error) { showNotice(error.message, true); }
   finally { button.disabled = false; }
-});
+}
+$('#pair-worker').addEventListener('click', (event) => void createPairingCode(event.currentTarget));
+$('#refresh-pair-code').addEventListener('click', (event) => void createPairingCode(event.currentTarget));
 $('#copy-pair-command').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('#pair-command').textContent.split('\n')[0]); showNotice('Pairing command copied.'); }
   catch { showNotice('Copy was blocked by the browser. Select and copy the first line.', true); }

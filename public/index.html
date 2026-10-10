@@ -66,8 +66,10 @@
             <div id="worker-connect" class="worker-connect" hidden>
               <p class="worker-state" id="worker-state">Pair a local runner to use your own Kane and Codex sign-ins.</p>
               <button class="small-button" id="pair-worker" type="button">Connect local runner</button>
+              <p class="pair-expiry" id="pair-expiry" role="status" aria-live="polite" hidden></p>
               <pre id="pair-command" class="pair-command" hidden></pre>
               <button class="small-button" id="copy-pair-command" type="button" hidden>Copy command</button>
+              <button class="small-button" id="refresh-pair-code" type="button" hidden>Refresh pairing code</button>
             </div>
             <section class="panel guardrail-panel" aria-labelledby="guardrails-title">
               <div class="eyebrow small">BUILT-IN GUARDRAILS</div><h2 id="guardrails-title">Evidence before edits.</h2>

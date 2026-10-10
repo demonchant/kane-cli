@@ -17,6 +17,33 @@ test('loads the workbench and reports real local tool readiness', async ({ page 
   expect(pageErrors).toEqual([]);
 });
 
+test('keeps hosted sign-in active, refreshes expired pairing codes, and detects a paired runner without reload', async ({ page }) => {
+  let runnerConnected = false;
+  let pairingNumber = 0;
+  const json = (body) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  await page.route('**/api/session', (route) => route.fulfill(json({ mode: 'google', authenticated: true, executionEnabled: true, user: { name: 'Demo User' } })));
+  await page.route('**/api/preflight', (route) => route.fulfill(json({ hosted: true, executionEnabled: true, worker: { connected: runnerConnected, busy: false } })));
+  await page.route('**/api/runs', (route) => route.fulfill(json({ runs: [] })));
+  await page.route('**/api/worker/pair', (route) => route.fulfill(json({ code: `demo-pair-code-${++pairingNumber}`, expiresInSeconds: 1 })));
+
+  await page.goto('/');
+  await expect(page.locator('#session-bar')).toBeVisible();
+  const originalPageTime = await page.evaluate(() => performance.timeOrigin);
+  await page.getByRole('button', { name: 'Connect local runner' }).click();
+  await expect(page.locator('#pair-command')).toContainText('demo-pair-code-1');
+  const refreshCode = page.getByRole('button', { name: 'Refresh pairing code' });
+  await expect(refreshCode).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator('#pair-expiry')).toContainText('expired');
+
+  await refreshCode.click();
+  await expect(page.locator('#pair-command')).toContainText('demo-pair-code-2');
+  runnerConnected = true;
+  await page.getByRole('button', { name: /^Check/ }).click();
+  await expect(page.locator('#worker-state')).toContainText('You can give PatchLoop a task now');
+  await expect(page.locator('#pair-command')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Refresh pairing code' })).toBeHidden();
+  expect(await page.evaluate(() => performance.timeOrigin)).toBe(originalPageTime);
+});
 test('serves the supplied backgrounds and assigns one to each screen', async ({ page, request }) => {
   await page.goto('/');
   await expect(page.locator('body')).toHaveAttribute('data-screen', 'workbench');
@@ -36,16 +63,18 @@ test('serves the supplied backgrounds and assigns one to each screen', async ({ 
   }
 });
 
-test('publishes the provider requirements and states which hosted connections are unavailable', async ({ page }) => {
+test('publishes the hosted runner prerequisites and setup steps', async ({ page }) => {
   const response = await page.goto('/setup.html');
   expect(response.status()).toBe(200);
-  await expect(page.getByRole('heading', { name: 'Bring your accounts. Keep provider costs yours.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'TestMu AI / Kane' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Codex with ChatGPT' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'What is usable today' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Create a TestMu AI account' })).toHaveAttribute('href', 'https://www.testmuai.com/register/');
+  await expect(page.locator('.setup-intro h1')).toContainText('Sign in on the site.');
+  await expect(page.locator('.setup-intro h1')).toContainText('Run tools on your computer.');
+  await expect(page.getByRole('heading', { name: 'Sign in with Google' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kane CLI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Codex CLI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Use the hosted PatchLoop page' })).toBeVisible();
+  await expect(page.getByText(/pairing code expires after 10 minutes and works once/i)).toBeVisible();
+  await expect(page.getByRole('link', { name: /Local setup in the repository/ })).toHaveAttribute('href', 'https://github.com/demonchant/kane-cli#run-locally');
 });
-
 test('loads a real bundled task prompt without creating fabricated run records', async ({ page }) => {
   test.setTimeout(45_000);
   await page.goto('/');

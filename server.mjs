@@ -156,7 +156,7 @@ async function route(req, res) {
 
   if (HOSTED && EXECUTION_MODE === 'worker' && req.method === 'POST' && url.pathname === '/api/worker/pair') {
     for (const [code, value] of pairingCodes) if (value.expiresAt < Date.now()) pairingCodes.delete(code);
-    if ([...pairingCodes.values()].filter((item) => item.ownerId === user.sub).length >= 2) return send(res, 429, { error: 'Too many active pairing codes. Wait 10 minutes and try again.' });
+    for (const [code, value] of pairingCodes) if (value.ownerId === user.sub) pairingCodes.delete(code);
     const code = randomBytes(18).toString('base64url');
     pairingCodes.set(code, { ownerId: user.sub, expiresAt: Date.now() + 10 * 60 * 1000 });
     return send(res, 201, { code, expiresInSeconds: 600 });
