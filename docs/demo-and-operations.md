@@ -115,7 +115,7 @@ Before recording, replace the generic run reference on screen with the actual ru
 The committed [verification record](verification.md) reports the following past results from the local bundled application; these are not hosted-worker results:
 
 - `npm.cmd run check` passed.
-- `npm.cmd test` passed (10 tests) on October 10, 2026.
+- `npm.cmd test` passed (11 tests) on October 10, 2026, including a showcase manifest launch/health test with a local test CLI stub (not Kane evidence).
 - Docker Playwright passed (11 tests) on October 10, 2026, including picker selection and stale-target rejection.
 - The showcase HTTP smoke check reproduced the intentional `completed: false` restore regression; it did not run Kane or Codex.
 - Kane run `db0ac6a2-2929-442f-a383-8e20d153ee28` passed the archive/restore objective with result code `100` (`success.complete`) and process exit `0`.
