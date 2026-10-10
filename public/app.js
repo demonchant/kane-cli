@@ -104,10 +104,15 @@ async function loadTargets() {
     const { targets = [] } = await api('/api/targets');
     availableTargets = targets.filter((target) => target.ready);
     const current = select.value;
-    select.innerHTML = availableTargets.length
-      ? availableTargets.map((target) => '<option value="' + escapeHtml(target.id) + '">' + escapeHtml(target.name) + '</option>').join('')
-      : '<option value="">Connect a runner to load repositories</option>';
-    if (availableTargets.some((target) => target.id === current)) select.value = current;
+    const nextOptions = availableTargets.length
+      ? availableTargets.map((target) => ({ id: target.id, name: target.name }))
+      : [{ id: '', name: 'Connect a runner to load repositories' }];
+    const optionsUnchanged = select.options.length === nextOptions.length
+      && nextOptions.every((target, index) => select.options[index].value === target.id && select.options[index].textContent === target.name);
+    if (!optionsUnchanged) {
+      select.innerHTML = nextOptions.map((target) => '<option value="' + escapeHtml(target.id) + '">' + escapeHtml(target.name) + '</option>').join('');
+      if (availableTargets.some((target) => target.id === current)) select.value = current;
+    }
     select.disabled = !availableTargets.length;
     const selected = availableTargets.find((target) => target.id === select.value);
     $('#target-requirements').textContent = selected?.requirements ?? (availableTargets.length ? 'This repository runs in a disposable worktree on your paired computer.' : 'Pair your local runner first; it will report the repositories available on that computer.');
@@ -175,7 +180,7 @@ $('#load-example').addEventListener('click', () => {
 });
 taskInput.addEventListener('input', counts);
 objectiveInput.addEventListener('input', counts);
-$('#refresh').addEventListener('click', () => { void loadRuns(); void loadPreflight(); });
+$('#refresh').addEventListener('click', () => { void loadRuns(); void loadPreflight(); void loadTargets(); });
 $('#check-setup').addEventListener('click', () => void loadPreflight());
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && activeSession?.mode === 'google') { void loadPreflight(); void loadTargets(); }
